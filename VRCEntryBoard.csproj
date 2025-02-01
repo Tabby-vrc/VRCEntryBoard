@@ -112,9 +112,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Domain\Service\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="resource\renew_48.png" />
   </ItemGroup>
