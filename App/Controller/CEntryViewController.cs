@@ -48,7 +48,7 @@ namespace VRCEntryBoard.App.Controller
                 int order = player.EntryStatus == emEntryStatus.AskMe ? 3 : player.EntryStatus == emEntryStatus.Visiter ? 2 : 1;
                 int newUser = player.ExpStatus.HasFlag(emExpStatus.Beginner) ? 3 : player.ExpStatus.HasFlag(emExpStatus.NewUser) ? 2 : 1;
                 int staff = player.StaffStatus ? 2 : 1;
-                int left = player.JoinStatus ? 1 : 0;
+                int left = player.JoinStatus ? 1 : 1000;
                 return (order * 100 + staff * 10 + newUser) * left;
             }).ToList();
 
