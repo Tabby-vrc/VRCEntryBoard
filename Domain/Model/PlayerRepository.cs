@@ -8,7 +8,7 @@ namespace VRCEntryBoard.Domain.Model
 {
     internal class PlayerRepository
     {
-        private readonly List<Player> _playerList;
+        private List<Player> _playerList;
 
         public PlayerRepository()
         {
@@ -30,7 +30,7 @@ namespace VRCEntryBoard.Domain.Model
         /// <summary>
         /// プレイヤー追加
         /// </summary>
-        private void AddPlayer(Player addPlayer)
+        public void AddPlayer(Player addPlayer)
         {
             Player player = _playerList.FirstOrDefault(p => p.Name == addPlayer.Name);
             if (null == player)
@@ -41,6 +41,46 @@ namespace VRCEntryBoard.Domain.Model
             {
                 player.JoinStatus = true;
             }
+        }
+
+        /// <summary>
+        /// プレイヤーの離席処理
+        /// </summary>
+        public void LeavePlayer(string playerName)
+        {
+            var player = _playerList.FirstOrDefault(p => p.Name == playerName);
+            if (player == null) return;
+
+            if (player.EntryStatus == emEntryStatus.Entry || player.StaffStatus)
+            {
+                // Entry済み又はスタッフプレイヤーの離席はリスト除外しない
+                player.JoinStatus = false;
+            }
+            else
+            {
+                _playerList.Remove(player);
+            }
+        }
+
+        /// <summary>
+        /// ワールド移動時の処理
+        /// </summary>
+        public void OnWorldChange()
+        {
+            // 確認済みプレイヤーのみ残してリストリセット.
+            _playerList.RemoveAll(player => player.EntryStatus == emEntryStatus.AskMe);
+            foreach (var player in _playerList)
+            {
+                player.JoinStatus = false;
+            }
+        }
+        /// <summary>
+        /// プレイヤーリスト取得
+        /// </summary>
+        /// <returns>プレイヤーリスト</returns>
+        public List<Player> GetPlayerList()
+        {
+            return _playerList;
         }
 
         /// <summary>
@@ -122,9 +162,6 @@ namespace VRCEntryBoard.Domain.Model
             }
 
             return player.StaffStatus;
-            {
-                
-            }
         }
     }
 }

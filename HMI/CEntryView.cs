@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using VRCEntryBoard.App.Controller;
 using VRCEntryBoard.Domain.Model;
 using VRCEntryBoard.HMI.CustomUserControl;
+using Microsoft.AspNetCore.Mvc;
 
 namespace VRCEntryBoard.HMI
 {
@@ -140,9 +141,14 @@ namespace VRCEntryBoard.HMI
         /// <summary>
         /// 更新ボタンクリック処理.
         /// </summary>
-        private void btnListUpdate_Click(object sender, EventArgs e)
+        private async void btnListUpdate_Click(object sender, EventArgs e)
         {
-            this._controller.UpdatePlayerList();
+            // ボタンを一時的に無効化して連打防止
+            this.btnListUpdate.Enabled = false;
+            // 非同期メソッドを呼び出す
+            await this._controller.UpdatePlayerList();
+            // 処理完了後、ボタンを再有効化
+            this.btnListUpdate.Enabled = true;
         }
 
         /// <summary>

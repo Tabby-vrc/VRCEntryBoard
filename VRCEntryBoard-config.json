@@ -1,0 +1,8 @@
+{
+    "Url": "supabase-url",
+    "Key": "supabase-key",
+    "MonitoredWorldNames": [
+        "world-name-1",
+        "world-name-2"
+    ]
+}

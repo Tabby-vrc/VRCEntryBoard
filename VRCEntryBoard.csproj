@@ -1,137 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{63F4341F-BE84-4D35-9ABA-089F26AF7B95}</ProjectGuid>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>VRCEntryBoard</RootNamespace>
-    <AssemblyName>VRCEntryBoard</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App\Controller\CEntryViewController.cs" />
-    <Compile Include="App\Grouping\CGroupAllocator.cs" />
-    <Compile Include="App\UseCase\GroupShuffleUseCase.cs" />
-    <Compile Include="Domain\Interfaces\IEntryRecorder.cs" />
-    <Compile Include="Domain\Model\EntryStatus.cs" />
-    <Compile Include="Domain\Model\ExpStatus.cs" />
-    <Compile Include="Domain\Model\Player.cs" />
-    <Compile Include="Domain\Interfaces\IVRCDataLoder.cs" />
-    <Compile Include="Domain\Model\PlayerRepository.cs" />
-    <Compile Include="Infra\CEntryRecorder.cs" />
-    <Compile Include="Infra\CVRCDataLoderInLogfile.cs" />
-    <Compile Include="HMI\CEntryView.cs">
+    <Compile Update="HMI\CEntryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="HMI\CEntryView.Designer.cs">
-      <DependentUpon>CEntryView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HMI\CustomUserControl\PlayerPanel.cs">
+    <Compile Update="HMI\CustomUserControl\PlayerPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="HMI\CustomUserControl\PlayerPanel.Designer.cs">
-      <DependentUpon>PlayerPanel.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HMI\MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="HMI\MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="HMI\CEntryView.resx">
-      <DependentUpon>CEntryView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="HMI\CustomUserControl\PlayerPanel.resx">
-      <DependentUpon>PlayerPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="HMI\MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <None Include="Document\README.md" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Document\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="resource\renew_48.png" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Supabase" Version="1.1.1" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="1.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="resource\upload_48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resource\newuser_48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resource\staff_48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resource\NEW_48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resource\Error_48.png" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

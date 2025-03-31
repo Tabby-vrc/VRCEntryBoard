@@ -16,6 +16,7 @@ namespace VRCEntryBoard.Domain.Model
         /// <param name="name">プレイヤー名</param>
         public Player(string name)
         {
+            ID = 0;
             Name = name;
             EntryStatus = emEntryStatus.AskMe;
             StaffStatus = false;
@@ -26,6 +27,9 @@ namespace VRCEntryBoard.Domain.Model
 
         /// <summary>プロパティ変更イベントハンドラ</summary>
         public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>プレイヤーID</summary>
+        public int ID { get; set; }
 
         /// <summary>プレイヤー名</summary>
         public string Name { get; set; }
