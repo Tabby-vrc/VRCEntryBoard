@@ -3,7 +3,7 @@ using System;
 
 namespace VRCEntryBoard.Infra.Logger
 {
-    public class LoggerFactory : ILoggerFactory
+    public class SerilogAdapterFactory : ILoggerFactory
     {
         public void AddProvider(ILoggerProvider provider)
         {

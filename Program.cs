@@ -3,15 +3,18 @@ using System;
 using System.Windows.Forms;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 using VRCEntryBoard.Infra;
-using VRCEntryBoard.Infra.SupabaseAdapter;
+using VRCEntryBoard.Infra.PlayerRepository;
 using VRCEntryBoard.Infra.VRChat;
 using VRCEntryBoard.App.Controller;
 using VRCEntryBoard.App.Services;
 using VRCEntryBoard.HMI;
 using VRCEntryBoard.HMI.Exception;
 using VRCEntryBoard.Domain.Interfaces;
+using VRCEntryBoard.Domain.Exceptions;
+using VRCEntryBoard.Infra.Logger;
 
 namespace VRCEntryBoard
 {
@@ -23,6 +26,12 @@ namespace VRCEntryBoard
         [STAThread]
         static void Main()
         {
+            // アプリケーション開始ログの出力
+            var logger = LogManager.GetLogger("Application");
+            logger.LogInformation("==================================================");
+            logger.LogInformation("アプリケーション起動開始 - VRCEntryBoard v{0}", GetAppVersion());
+            logger.LogInformation("==================================================");
+
             // メインフォームの取得と表示
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -41,12 +50,27 @@ namespace VRCEntryBoard
 
                 // メインフォームの取得と表示
                 var mainForm = serviceProvider.GetRequiredService<MainForm>();
+                logger.LogInformation("メインフォーム表示開始");
                 Application.Run(mainForm);
+                
+                // アプリケーション正常終了のログ
+                logger.LogInformation("==================================================");
+                logger.LogInformation("アプリケーション正常終了");
+                logger.LogInformation("==================================================");
             }
             catch (Exception ex)
             {
-                HandleFatalException(ex);
+                // エラー終了のログは例外ハンドラで記録されるため、ここでは不要
+                HandleException(ex);
             }
+        }
+
+        /// <summary>
+        /// アプリケーションのバージョンを取得
+        /// </summary>
+        private static string GetAppVersion()
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
         private static void ConfigureServices(IServiceCollection services)
@@ -59,7 +83,11 @@ namespace VRCEntryBoard
             // インフラ層
             services.AddSingleton<IVRCDataLoder, CVRCDataLoderInLogfile>();
             services.AddSingleton<IEntryRecorder, CEntryRecorder>();
-            services.AddSingleton<IPlayerRepository, SupabaseClient>();
+            services.AddSingleton<PlayerRepositoryFactory>();
+            services.AddSingleton<IPlayerRepository>(provider => {
+                var factory = provider.GetRequiredService<PlayerRepositoryFactory>();
+                return factory.CreateRepository();
+            });
 
             // アプリケーション層
             services.AddSingleton<VRCDataManagementService>();
@@ -80,7 +108,7 @@ namespace VRCEntryBoard
         /// </summary>
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
         {
-            HandleFatalException(e.Exception);
+            HandleException(e.Exception);
         }
 
         /// <summary>
@@ -88,7 +116,7 @@ namespace VRCEntryBoard
         /// </summary>
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            HandleFatalException(e.ExceptionObject as Exception);
+            HandleException(e.ExceptionObject as Exception);
         }
 
         /// <summary>
@@ -96,25 +124,53 @@ namespace VRCEntryBoard
         /// </summary>
         private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            HandleFatalException(e.Exception);
+            HandleException(e.Exception);
             e.SetObserved(); // 例外を処理済みとしてマーク
         }
 
         /// <summary>
-        /// 致命的な例外の共通処理
+        /// 例外の共通処理
         /// </summary>
-        private static void HandleFatalException(Exception ex)
+        private static void HandleException(Exception ex)
         {
             try
             {
-                // ExceptionHandlerを使用して例外通知とログ記録を一元化
-                Infra.ExceptionHandler.HandleFatalException(
-                    ex,
-                    "予期せぬエラー",
-                    "アプリケーションで予期せぬエラーが発生しました。アプリケーションを終了します。");
+                var logger = LogManager.GetLogger("Application");
+                logger.LogError("==================================================");
+                logger.LogError("アプリケーションでエラーが発生しました");
+                
+                // アプリケーション例外とその他の例外を区別
+                if (ex is VRCApplicationException appEx)
+                {
+                    // アプリケーション例外の場合は、設定されたタイトルとメッセージを使用
+                    logger.LogError($"エラー種別: {appEx.ErrorTitle}");
+                    Infra.ExceptionHandler.HandleFatalException(
+                        ex,
+                        appEx.ErrorTitle,
+                        appEx.DetailedMessage);
+                    
+                    // 致命的でない場合は、アプリケーションを終了しない
+                    if (!appEx.IsFatal)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    // 予期しない例外の場合は、デフォルトのメッセージを使用
+                    logger.LogError("エラー種別: 予期せぬエラー");
+                    Infra.ExceptionHandler.HandleFatalException(
+                        ex,
+                        "予期せぬエラー",
+                        "アプリケーションで予期せぬエラーが発生しました。アプリケーションを終了します。");
+                }
+                
+                logger.LogError("アプリケーションを終了します");
+                logger.LogError("==================================================");
             }
             finally
             {
+                // VRCApplicationExceptionでIsFatalがfalseの場合はここに到達しない
                 Application.Exit();
             }
         }

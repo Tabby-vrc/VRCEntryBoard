@@ -6,7 +6,6 @@ using System.IO;
 using System.Text.Json;
 
 using VRCEntryBoard.Infra.VRChat;
-using VRCEntryBoard.Infra.SupabaseAdapter;
 using VRCEntryBoard.Domain.Interfaces;
 using VRCEntryBoard.Domain.Model;
 

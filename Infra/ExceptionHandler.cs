@@ -11,7 +11,7 @@ namespace VRCEntryBoard.Infra
     /// </summary>
     public static class ExceptionHandler
     {
-        private static readonly ILogger _logger = VRCEntryBoard.Infra.Logger.LoggerExtensions.GetLogger("GlobalExceptionHandler");
+        private static readonly ILogger _logger = LogManager.GetLogger("GlobalExceptionHandler");
 
         /// <summary>
         /// 致命的な例外を処理し、ユーザーに通知する

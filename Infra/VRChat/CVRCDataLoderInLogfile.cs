@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
+using VRCEntryBoard.Infra.Logger;
 using VRCEntryBoard.App.Services;
 
 namespace VRCEntryBoard.Infra.VRChat
@@ -30,7 +31,7 @@ namespace VRCEntryBoard.Infra.VRChat
         /// </summary>
         public CVRCDataLoderInLogfile()
         {
-            _logger = VRCEntryBoard.Infra.Logger.LoggerExtensions.GetLogger<CVRCDataLoderInLogfile>();
+            _logger = LogManager.GetLogger<CVRCDataLoderInLogfile>();
 
             try
             {

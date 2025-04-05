@@ -3,9 +3,9 @@ using System;
 
 namespace VRCEntryBoard.Infra.Logger
 {
-    public static class LoggerExtensions
+    public static class LogManager
     {
-        private static readonly LoggerFactory _factory = new LoggerFactory();
+        private static readonly SerilogAdapterFactory _factory = new SerilogAdapterFactory();
 
         public static ILogger<T> GetLogger<T>()
         {

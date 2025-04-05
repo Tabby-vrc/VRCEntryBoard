@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace VRCEntryBoard.HMI.Exception
 {
-    public class WindowsFormsExceptionNotifier : IExceptionNotifier
+    internal class WindowsFormsExceptionNotifier : IExceptionNotifier
     {
         public void NotifyFatalError(string title, string message, System.Exception ex)
         {
@@ -17,18 +17,20 @@ namespace VRCEntryBoard.HMI.Exception
             );
         }
 
-        public void NotifyRecoverableError(string title, string message, System.Exception ex)
+        public bool NotifyRecoverableError(string title, string message, System.Exception ex)
         {
-            string fullMessage = $"{message}\n\n";
-            
-            fullMessage += "アプリケーションを続行しますか？\n\n";
-            
-            MessageBox.Show(
-                fullMessage, 
-                title, 
-                MessageBoxButtons.YesNo, 
-                MessageBoxIcon.Warning
-            );
+            // ユーザーに選択肢を提示するダイアログ
+            var result = MessageBox.Show(
+                message, 
+                title,
+                MessageBoxButtons.OKCancel, 
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button1,
+                0,
+                "続行する場合はOK、終了する場合はキャンセルを選択してください。");
+                
+            // OKならtrue（続行）、それ以外ならfalse（終了）
+            return result == DialogResult.OK;
         }
     }
 }
