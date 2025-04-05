@@ -9,11 +9,6 @@ namespace VRCEntryBoard.HMI.Exception
         {
             string fullMessage = $"{message}\n\n";
             
-            if (ex != null)
-            {
-                fullMessage += $"エラーの詳細: {ex.Message}\n\n";
-            }
-
             MessageBox.Show(
                 fullMessage, 
                 title, 
@@ -26,10 +21,8 @@ namespace VRCEntryBoard.HMI.Exception
         {
             string fullMessage = $"{message}\n\n";
             
-            if (ex != null)
-            {
-                fullMessage += $"エラーの詳細: {ex.Message}\n\n";
-            }
+            fullMessage += "アプリケーションを続行しますか？\n\n";
+            
             MessageBox.Show(
                 fullMessage, 
                 title, 

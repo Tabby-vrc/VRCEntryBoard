@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Windows.Forms;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using VRCEntryBoard.App.Controller;
 using VRCEntryBoard.App.Services;
 using VRCEntryBoard.HMI;
 using VRCEntryBoard.HMI.Exception;
-using VRCEntryBoard.Domain.Model;
+using VRCEntryBoard.Domain.Interfaces;
 
 namespace VRCEntryBoard
 {
@@ -33,30 +34,45 @@ namespace VRCEntryBoard
 
             try
             {
-                // HMI層
-                WindowsFormsExceptionNotifier exceptionNotifier = new WindowsFormsExceptionNotifier();
+                // DIコンテナの設定
+                var services = new ServiceCollection();
+                ConfigureServices(services);
+                var serviceProvider = services.BuildServiceProvider();
 
-                // インフラ層
-                CVRCDataLoderInLogfile VRCData = new CVRCDataLoderInLogfile();
-                CEntryRecorder entryRecorder = new CEntryRecorder();
-                entryRecorder.Initialize();
-                SupabaseClient supabaseClient = new SupabaseClient(exceptionNotifier);
-
-                // アプリケーション層
-                VRCDataManagementService vrcDataManagementService = new VRCDataManagementService(VRCData, supabaseClient);
-                CEntryViewController cEntryViewController = new CEntryViewController(vrcDataManagementService, supabaseClient);
-                CEntryView cEntryView = new CEntryView(cEntryViewController);
-                cEntryView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-                cEntryView.Dock = DockStyle.Fill;
-
-                MainForm form1 = new MainForm();
-                form1.Controls.Add(cEntryView);
-                Application.Run(form1);
+                // メインフォームの取得と表示
+                var mainForm = serviceProvider.GetRequiredService<MainForm>();
+                Application.Run(mainForm);
             }
             catch (Exception ex)
             {
                 HandleFatalException(ex);
             }
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            // HMI層
+            services.AddSingleton<IExceptionNotifier, WindowsFormsExceptionNotifier>();
+            services.AddTransient<CEntryView>();
+            services.AddSingleton<MainForm>();
+
+            // インフラ層
+            services.AddSingleton<IVRCDataLoder, CVRCDataLoderInLogfile>();
+            services.AddSingleton<IEntryRecorder, CEntryRecorder>();
+            services.AddSingleton<IPlayerRepository, SupabaseClient>();
+
+            // アプリケーション層
+            services.AddSingleton<VRCDataManagementService>();
+            services.AddSingleton<CEntryViewController>();
+
+            // 構成処理
+            services.AddTransient<Action<MainForm>>(provider => form =>
+            {
+                var entryView = provider.GetRequiredService<CEntryView>();
+                entryView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+                entryView.Dock = DockStyle.Fill;
+                form.Controls.Add(entryView);
+            });
         }
 
         /// <summary>
@@ -91,10 +107,11 @@ namespace VRCEntryBoard
         {
             try
             {
-                // ExceptionHandler.ShowExceptionMessageBox(
-                //     "予期せぬエラー",
-                //     "アプリケーションで予期せぬエラーが発生しました。アプリケーションを終了します。",
-                //     ex);
+                // ExceptionHandlerを使用して例外通知とログ記録を一元化
+                Infra.ExceptionHandler.HandleFatalException(
+                    ex,
+                    "予期せぬエラー",
+                    "アプリケーションで予期せぬエラーが発生しました。アプリケーションを終了します。");
             }
             finally
             {

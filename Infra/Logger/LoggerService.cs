@@ -37,7 +37,8 @@ namespace VRCEntryBoard.Infra.Logger
                 .WriteTo.File(
                     Path.Combine(logFolder, "vrc-entryboard-.log"),
                     rollingInterval: RollingInterval.Day,
-                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+                    // 例外出力はメッセージのみ表示し、スタックトレースは含めない
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}",
                     shared: true,  // 複数プロセスからの書き込みを許可
                     flushToDiskInterval: TimeSpan.FromSeconds(10)) // 定期的にディスクに書き込み
                 .CreateLogger();
@@ -64,18 +65,21 @@ namespace VRCEntryBoard.Infra.Logger
                     try
                     {
                         File.Delete(logFiles[i].FullName);
+                        // ファイル名のみを出力し、完全パスは含めない
                         Console.WriteLine($"古いログファイルを削除しました: {logFiles[i].Name}");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"ファイル削除エラー: {ex.Message}");
+                        // エラーメッセージからパス情報を除去
+                        Console.WriteLine($"ファイル削除エラー: {ex.GetType().Name}");
                     }
                 }
             }
             catch (Exception ex)
             {
                 // ログファイルのクリーンアップ中の例外は無視（アプリケーション動作に影響させない）
-                Console.WriteLine($"ログクリーンアップエラー: {ex.Message}");
+                // エラーメッセージからパス情報を除去
+                Console.WriteLine($"ログクリーンアップエラー: {ex.GetType().Name}");
             }
         }
 
@@ -97,30 +101,42 @@ namespace VRCEntryBoard.Infra.Logger
             }
 
             var message = formatter(state, exception);
-            var logMessage = $"[{_categoryName}] {message}";
+            
+            // パス情報を含む可能性のある例外スタックトレースを除去
+            // 例外が存在する場合は、例外メッセージのみをログに含める
+            string logMessage;
+            if (exception != null)
+            {
+                // 例外のメッセージのみを使用し、スタックトレースは含めない
+                logMessage = $"[{_categoryName}] {message} - 例外: {exception.GetType().Name}: {exception.Message}";
+            }
+            else
+            {
+                logMessage = $"[{_categoryName}] {message}";
+            }
 
             switch (logLevel)
             {
                 case LogLevel.Trace:
-                    _logger.Verbose(exception, logMessage);
+                    _logger.Verbose(logMessage);
                     break;
                 case LogLevel.Debug:
-                    _logger.Debug(exception, logMessage);
+                    _logger.Debug(logMessage);
                     break;
                 case LogLevel.Information:
-                    _logger.Information(exception, logMessage);
+                    _logger.Information(logMessage);
                     break;
                 case LogLevel.Warning:
-                    _logger.Warning(exception, logMessage);
+                    _logger.Warning(logMessage);
                     break;
                 case LogLevel.Error:
-                    _logger.Error(exception, logMessage);
+                    _logger.Error(logMessage);
                     break;
                 case LogLevel.Critical:
-                    _logger.Fatal(exception, logMessage);
+                    _logger.Fatal(logMessage);
                     break;
                 default:
-                    _logger.Information(exception, logMessage);
+                    _logger.Information(logMessage);
                     break;
             }
         }

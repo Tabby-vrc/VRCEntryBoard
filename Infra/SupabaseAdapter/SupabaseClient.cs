@@ -45,7 +45,7 @@ namespace VRCEntryBoard.Infra.SupabaseAdapter
             {
                 HandleError("データベース接続エラー", 
                     "データベースへの接続に失敗しました。設定ファイルを確認してください。", null, true);
-                throw;
+                throw new InvalidOperationException("データベースへの接続に失敗しました");
             }
         }
 
@@ -70,7 +70,7 @@ namespace VRCEntryBoard.Infra.SupabaseAdapter
                 {
                     HandleError("設定ファイルエラー", 
                         "設定ファイルの読み込みに失敗しました。ファイル形式を確認してください。", null, true);
-                    throw new InvalidOperationException("設定ファイルの読み込みに失敗しました。");
+                    throw new InvalidOperationException("設定ファイルの読み込みに失敗しました");
                 }
 
                 // 設定の検証
@@ -93,7 +93,7 @@ namespace VRCEntryBoard.Infra.SupabaseAdapter
             {
                 HandleError("設定ファイルエラー", 
                     "設定ファイルの読み込み中に予期せぬエラーが発生しました。", ex, true);
-                throw new InvalidOperationException("設定ファイルの読み込みに失敗しました。", ex);
+                throw new InvalidOperationException("設定ファイルの読み込みに失敗しました", ex);
             }
         }
 
@@ -107,11 +107,11 @@ namespace VRCEntryBoard.Infra.SupabaseAdapter
                 await _client.InitializeAsync();
                 _logger.LogInformation("Supabaseクライアントが非同期初期化されました");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 HandleError("データベース初期化エラー", 
-                    "クライアントの初期化中にエラーが発生しました。ネットワーク接続を確認してください。", null, true);
-                throw;
+                    "クライアントの初期化中にエラーが発生しました。ネットワーク接続を確認してください。", ex, true);
+                throw new InvalidOperationException("クライアントの初期化中にエラーが発生しました", ex);
             }
         }
 
@@ -411,14 +411,20 @@ namespace VRCEntryBoard.Infra.SupabaseAdapter
         // エラー通知時に抽象化された通知インターフェースを使用
         private void HandleError(string title, string message, Exception ex, bool isFatal = false)
         {
+            // すべてのエラーをログに記録
             _logger.LogError(ex, message);
             
             if (isFatal)
             {
-                _exceptionNotifier.NotifyFatalError(title, message, ex);
+                // 致命的エラーの場合:
+                // 1. UI通知は行わない（通知はアプリケーションのエントリポイントで一元的に処理）
+                // 2. 呼び出し元で例外がスローされ、最終的にProgram.csのグローバルハンドラーで処理
+                return;
             }
             else
             {
+                // 回復可能なエラーの場合:
+                // ユーザーに通知して処理を継続可能にする
                 _exceptionNotifier.NotifyRecoverableError(title, message, ex);
             }
         }

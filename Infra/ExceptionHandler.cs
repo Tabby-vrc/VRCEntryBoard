@@ -38,13 +38,7 @@ namespace VRCEntryBoard.Infra
         {
             _logger.LogError(ex, "回復可能なエラーが発生しました: {Message}", message);
             
-            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
             string fullMessage = $"{message}\n\n";
-            
-            if (ex != null)
-            {
-                fullMessage += $"エラーの詳細: {ex.Message}\n\n";
-            }
             
             fullMessage += "アプリケーションを続行しますか？\n\n";
             
@@ -65,13 +59,7 @@ namespace VRCEntryBoard.Infra
         /// <param name="ex">例外オブジェクト（nullの場合もあり）</param>
         public static void ShowExceptionMessageBox(string title, string message, Exception ex)
         {
-            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
             string fullMessage = $"{message}\n\n";
-            
-            if (ex != null)
-            {
-                fullMessage += $"エラーの詳細: {ex.Message}\n\n";
-            }
             
             MessageBox.Show(
                 fullMessage, 
