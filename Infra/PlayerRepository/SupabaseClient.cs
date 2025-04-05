@@ -11,11 +11,12 @@ using System.Text.Json;
 using System.IO;
 using Microsoft.Extensions.Logging;
 
+using VRCEntryBoard.Infra.Logger;
 using VRCEntryBoard.HMI.Exception;
 using VRCEntryBoard.Domain.Interfaces;
 using VRCEntryBoard.Domain.Model;
 
-namespace VRCEntryBoard.Infra.SupabaseAdapter
+namespace VRCEntryBoard.Infra.PlayerRepository
 {
     internal class SupabaseClient : IPlayerRepository
     {
@@ -30,22 +31,32 @@ namespace VRCEntryBoard.Infra.SupabaseAdapter
         {
             _exceptionNotifier = exceptionNotifier ?? 
                 throw new ArgumentNullException(nameof(exceptionNotifier));
-            _logger = VRCEntryBoard.Infra.Logger.LoggerExtensions.GetLogger<SupabaseClient>();
+            _logger = LogManager.GetLogger<SupabaseClient>();
             _players = new List<Player>();
-            _config = LoadConfig();
+            
             try
             {
+                _config = LoadConfig();
                 var options = new SupabaseOptions
                 {
                     AutoConnectRealtime = true,
                 };
+                
+                // 接続テスト - オンラインかどうか確認
                 _client = new Supabase.Client(_config.Url, _config.Key, options);
+                // 接続を即座にテスト - 失敗したら例外がスローされる
+                var initTask = _client.InitializeAsync();
+                initTask.Wait(TimeSpan.FromSeconds(5)); // 短い待機時間でタイムアウト
+                
+                if (!initTask.IsCompleted)
+                {
+                    throw new TimeoutException("Supabase接続のタイムアウト");
+                }
             }
-            catch (Exception)
+            catch
             {
-                HandleError("データベース接続エラー", 
-                    "データベースへの接続に失敗しました。設定ファイルを確認してください。", null, true);
-                throw new InvalidOperationException("データベースへの接続に失敗しました");
+                // 例外をリスローして、ファクトリに伝える
+                throw;
             }
         }
 
