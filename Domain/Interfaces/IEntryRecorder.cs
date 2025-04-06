@@ -8,8 +8,6 @@ namespace VRCEntryBoard.Domain.Interfaces
 {
     internal interface IEntryRecorder
     {
-        void Initialize();
-
         List<string> GetRecotdList();
     }
 }

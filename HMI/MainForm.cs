@@ -12,9 +12,15 @@ namespace VRCEntryBoard.HMI
 {
     public partial class MainForm : Form
     {
-        public MainForm()
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        public MainForm(Action<MainForm> initializer)
         {
             InitializeComponent();
+            
+            // DIコンテナから渡されたイニシャライザアクションを実行
+            initializer(this);
         }
     }
 }

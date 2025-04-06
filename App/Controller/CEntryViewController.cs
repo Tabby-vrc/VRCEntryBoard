@@ -3,47 +3,49 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using VRCEntryBoard.App.Grouping;
-using VRCEntryBoard.Domain.Interfaces;
-using VRCEntryBoard.Domain.Model;
+
 using VRCEntryBoard.HMI;
+using VRCEntryBoard.App.Services;
+using VRCEntryBoard.App.Grouping;
+using VRCEntryBoard.Domain.Model;
+using VRCEntryBoard.Domain.Interfaces;
 
 namespace VRCEntryBoard.App.Controller
 {
     internal class CEntryViewController
     {
-        private IVRCDataLoder _VRCData;
+        private readonly VRCDataManagementService _vrcDataManagementService;
         private CEntryView _EntryView;
-        private PlayerRepository _PlayerRepository;
         private CGroupAllocator _GroupAllocator;
+        private IPlayerRepository _PlayerRepository;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public CEntryViewController(IVRCDataLoder vRCData)
+        public CEntryViewController(VRCDataManagementService vrcDataManagementService, IPlayerRepository playerRepository)
         {
-            _VRCData = vRCData;
-            _PlayerRepository = new PlayerRepository();
+            _vrcDataManagementService = vrcDataManagementService;
+            _PlayerRepository = playerRepository;
+            _PlayerRepository.SubscribeUpdates();
             _GroupAllocator = new CGroupAllocator();
         }
 
         public void SetView(CEntryView view)
         {
-            this._EntryView = view;
+            _EntryView = view;
         }
 
         /// <summary>
         /// プレイヤーリストの更新
         /// </summary>
-        public void UpdatePlayerList()
+        public async Task UpdatePlayerList()
         {
-            this._VRCData.UpdatePlayerList();
-
-            _PlayerRepository.AddPlayer(_VRCData.GetPlayerList());
-
+            await _vrcDataManagementService.UpdatePlayerList();
+            
             // 表示順をステータス順に整理.
-            var query = this._VRCData.GetPlayerList().OrderBy(player =>
+            var query = _PlayerRepository.GetPlayers().OrderBy(player =>
             {
                 int order = player.EntryStatus == emEntryStatus.AskMe ? 3 : player.EntryStatus == emEntryStatus.Visiter ? 2 : 1;
                 int newUser = player.ExpStatus.HasFlag(emExpStatus.Beginner) ? 3 : player.ExpStatus.HasFlag(emExpStatus.NewUser) ? 2 : 1;
@@ -52,10 +54,10 @@ namespace VRCEntryBoard.App.Controller
                 return (order * 100 + staff * 10 + newUser) * left;
             }).ToList();
 
-            this._EntryView.UpdatePlayerList(query);
+            _EntryView.UpdatePlayerList(query);
 
             GetEntryNum(out int entryNum, out int beginnerNum, out int staffNum, out int instanceNum);
-            this._EntryView.UpdateEntryNum(entryNum, beginnerNum, staffNum, instanceNum);
+            _EntryView.UpdateEntryNum(entryNum, beginnerNum, staffNum, instanceNum);
         }
 
         /// <summary>
@@ -65,12 +67,14 @@ namespace VRCEntryBoard.App.Controller
         /// <param name="status">更新ステータス</param>
         public void UpdateEntryStatus(string targetPlayerName, emEntryStatus status)
         {
-            this._PlayerRepository.UpdateStatus(targetPlayerName, status);
+            var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            targetPlayer.EntryStatus = status;
+            _PlayerRepository.UpdateEntryStatus(targetPlayer);
             UpdateNum();
         }
         public emEntryStatus GetEntryStatus(string targetPlayerName)
         {
-            return this._PlayerRepository.GetEntryStatus(targetPlayerName);
+            return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).EntryStatus;
         }
 
         /// <summary>
@@ -78,15 +82,15 @@ namespace VRCEntryBoard.App.Controller
         /// </summary>
         public void UpdateBeginnerStatus(string targetPlayerName, bool isBeginner)
         {
-            var status = _PlayerRepository.GetExpStatus(targetPlayerName);
-            if (isBeginner) status |= emExpStatus.Beginner;
-            else            status &= ~emExpStatus.Beginner;
-            _PlayerRepository.UpdateExpStatus(targetPlayerName, status);
+            var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            if (isBeginner) targetPlayer.ExpStatus |= emExpStatus.Beginner;
+            else            targetPlayer.ExpStatus &= ~emExpStatus.Beginner;
+            _PlayerRepository.UpdateExpStatus(targetPlayer);
             UpdateNum();
         }
         public emExpStatus GetExpStatus(string targetPlayerName)
         {
-            return _PlayerRepository.GetExpStatus(targetPlayerName);
+            return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).ExpStatus;
         }
 
         /// <summary>
@@ -94,12 +98,14 @@ namespace VRCEntryBoard.App.Controller
         /// </summary>
         public void UpdateStaff(string targetPlayerName, bool isStaff)
         {
-            this._PlayerRepository.UpdateStaff(targetPlayerName, isStaff);
+            var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            targetPlayer.StaffStatus = isStaff;
+            _PlayerRepository.UpdateStaffStatus(targetPlayer);
             UpdateNum();
         }
         public bool GetStaff(string targetPlayerName)
         {
-            return this._PlayerRepository.GetStaff(targetPlayerName);
+            return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).StaffStatus;
         }
 
         private void UpdateNum()
@@ -110,45 +116,12 @@ namespace VRCEntryBoard.App.Controller
 
         public void GroupingPlayerList()
         {
-            _GroupAllocator.Allocate(_VRCData.GetPlayerList());
-            /*
-            var playerList = this._VRCData.GetPlayerList();
-
-            int entryPlayerNum = playerList.Where(player => player.EntryStatus == emEntryStatus.Entry).Count();
-            List<int> groupCountList = GroupCountCalculation(entryPlayerNum);
-            if (0 >= groupCountList.Count()) return;
-
-            List<string> entryPlayerList = playerList.Where(player => player.EntryStatus == emEntryStatus.Entry)
-                                                     .Select(player => player.Name).ToList();
-
-            List<int> groupNameList = GetIndexes(groupCountList);
-
-            int playerNum = entryPlayerList.Count;
-            var rand = new Random();
-            for (int i = 0; i < playerNum - 1; i++)
-            {
-                int nowPlayerCount = entryPlayerList.Count;
-                int selectIndex = rand.Next(0, nowPlayerCount - 2);
-                string selectPlayerName = entryPlayerList[selectIndex];
-
-                playerList.First(player => player.Name == selectPlayerName).GroupNo = groupNameList[0];
-
-                entryPlayerList[selectIndex] = entryPlayerList[nowPlayerCount - 1];
-                entryPlayerList.RemoveAt(nowPlayerCount - 1);
-                groupNameList.RemoveAt(0);
-            }
-            playerList.First(player => player.Name == entryPlayerList[0]).GroupNo = groupNameList[0];
-
-            foreach (var nonEntryPlayer in playerList.Where(player => player.EntryStatus != emEntryStatus.Entry))
-            {
-                nonEntryPlayer.GroupNo = 0;
-            }
-            */
+            _GroupAllocator.Allocate(_PlayerRepository.GetPlayers());
         }
 
         public void OutputPlayerList()
         {
-            foreach (var playerGroup in this._VRCData.GetPlayerList().GroupBy(player => player.GroupNo))
+            foreach (var playerGroup in _PlayerRepository.GetPlayers().GroupBy(player => player.GroupNo))
             {
                 // どこにも属さないPlayerは出力しない
                 if (playerGroup.Key == 0) continue;
@@ -156,6 +129,7 @@ namespace VRCEntryBoard.App.Controller
                 try
                 {
                     // CSVファイルを書き出しモードで開く
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                     using (StreamWriter writer = new StreamWriter(string.Format("グループ{0}.csv", playerGroup.Key), false, Encoding.GetEncoding("Shift-JIS")))
                     {
                         writer.WriteLine("プレイヤー名");
@@ -274,7 +248,7 @@ namespace VRCEntryBoard.App.Controller
         /// <param name="staffNum">スタッフ人数</param>
         private void GetEntryNum(out int entryNum, out int beginnerNum, out int staffNum, out int instanceNum)
         {
-            var playerList = this._VRCData.GetPlayerList();
+            var playerList = _PlayerRepository.GetPlayers();
             var entryList = playerList.Where(p => p.EntryStatus == emEntryStatus.Entry);
 
             entryNum = entryList.Count(p => !p.ExpStatus.HasFlag(emExpStatus.Beginner));

@@ -11,15 +11,21 @@ namespace VRCEntryBoard.Infra
     internal class CEntryRecorder : IEntryRecorder
     {
         private readonly string _recordFileName = "GAGEntryRecord.csv";
-
         private List<string> _recordList = new List<string>();
 
-        public CEntryRecorder() { }
+        /// <summary>
+        /// コンストラクタ - DIコンテナからインスタンス化されるときに自動的に初期化されます
+        /// </summary>
+        public CEntryRecorder()
+        {
+            // コンストラクタで初期化を実行
+            Initialize();
+        }
 
         /// <summary>
         /// 初期化処理
         /// </summary>
-        public void Initialize()
+        private void Initialize()
         {
             string currentDirectoryPath = Directory.GetCurrentDirectory();
             string recordFilePath = Path.Combine(currentDirectoryPath, this._recordFileName);
