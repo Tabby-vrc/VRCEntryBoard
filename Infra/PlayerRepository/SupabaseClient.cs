@@ -15,6 +15,7 @@ using VRCEntryBoard.Infra.Logger;
 using VRCEntryBoard.HMI.Exception;
 using VRCEntryBoard.Domain.Interfaces;
 using VRCEntryBoard.Domain.Model;
+using VRCEntryBoard.Domain.Exceptions;
 
 namespace VRCEntryBoard.Infra.PlayerRepository
 {
@@ -69,9 +70,10 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             {
                 if (!File.Exists(_configPath))
                 {
-                    HandleError("設定ファイルエラー", 
-                        $"設定ファイルが見つかりません", null, true);
-                    throw new FileNotFoundException("設定ファイルが見つかりません");
+                    throw new VRCApplicationException(
+                        "設定ファイルエラー", 
+                        "設定ファイルが見つかりません", 
+                        isFatal: true);
                 }
 
                 string jsonContent = File.ReadAllText(_configPath);
@@ -79,32 +81,38 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 
                 if (config == null)
                 {
-                    HandleError("設定ファイルエラー", 
-                        "設定ファイルの読み込みに失敗しました。ファイル形式を確認してください。", null, true);
-                    throw new InvalidOperationException("設定ファイルの読み込みに失敗しました");
+                    throw new VRCApplicationException(
+                        "設定ファイルエラー", 
+                        "設定ファイルの読み込みに失敗しました。ファイル形式を確認してください。", 
+                        isFatal: true);
                 }
 
                 // 設定の検証
                 if (string.IsNullOrEmpty(config.Url) || string.IsNullOrEmpty(config.Key))
                 {
-                    HandleError("設定ファイルエラー", 
-                        "設定が不完全です: URLまたはKeyが設定されていません。設定ファイルを確認してください。", null, true);
-                    throw new InvalidOperationException("設定が不完全です: URLまたはKeyが設定されていません");
+                    throw new VRCApplicationException(
+                        "設定ファイルエラー", 
+                        "設定が不完全です: URLまたはKeyが設定されていません。設定ファイルを確認してください。", 
+                        isFatal: true);
                 }
 
                 return config;
             }
             catch (JsonException ex)
             {
-                HandleError("設定ファイルエラー", 
-                    "設定ファイルのJSONフォーマットが不正です。設定ファイルを確認してください。", ex, true);
-                throw new InvalidOperationException("設定ファイルのJSONフォーマットが不正です", ex);
+                throw new VRCApplicationException(
+                    "設定ファイルエラー", 
+                    "設定ファイルのJSONフォーマットが不正です。設定ファイルを確認してください。", 
+                    isFatal: true, 
+                    innerException: ex);
             }
-            catch (Exception ex) when (ex is not FileNotFoundException && ex is not InvalidOperationException)
+            catch (Exception ex) when (ex is not VRCApplicationException && ex is not FileNotFoundException && ex is not InvalidOperationException)
             {
-                HandleError("設定ファイルエラー", 
-                    "設定ファイルの読み込み中に予期せぬエラーが発生しました。", ex, true);
-                throw new InvalidOperationException("設定ファイルの読み込みに失敗しました", ex);
+                throw new VRCApplicationException(
+                    "設定ファイルエラー", 
+                    "設定ファイルの読み込み中に予期せぬエラーが発生しました。", 
+                    isFatal: true, 
+                    innerException: ex);
             }
         }
 
@@ -120,9 +128,11 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             }
             catch (Exception ex)
             {
-                HandleError("データベース初期化エラー", 
-                    "クライアントの初期化中にエラーが発生しました。ネットワーク接続を確認してください。", ex, true);
-                throw new InvalidOperationException("クライアントの初期化中にエラーが発生しました", ex);
+                throw new VRCApplicationException(
+                    "データベース初期化エラー", 
+                    "クライアントの初期化中にエラーが発生しました。ネットワーク接続を確認してください。", 
+                    isFatal: true, 
+                    innerException: ex);
             }
         }
 
@@ -414,8 +424,11 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             }
             catch (Exception ex)
             {
-                HandleError("Supabaseリアルタイム購読エラー", 
-                    "Supabaseリアルタイム更新の購読設定中にエラーが発生しました", ex);
+                throw new VRCApplicationException(
+                    "Supabaseリアルタイム購読エラー", 
+                    "Supabaseリアルタイム更新の購読設定中にエラーが発生しました", 
+                    isFatal: false, 
+                    innerException: ex);
             }
         }
 
@@ -427,10 +440,8 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             
             if (isFatal)
             {
-                // 致命的エラーの場合:
-                // 1. UI通知は行わない（通知はアプリケーションのエントリポイントで一元的に処理）
-                // 2. 呼び出し元で例外がスローされ、最終的にProgram.csのグローバルハンドラーで処理
-                return;
+                // 致命的エラーの場合はVRCApplicationExceptionをスロー
+                throw new VRCApplicationException(title, message, isFatal, ex);
             }
             else
             {

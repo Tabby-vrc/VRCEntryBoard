@@ -9,6 +9,7 @@ using VRCEntryBoard.Infra.Logger;
 using VRCEntryBoard.Domain.Interfaces;
 using VRCEntryBoard.Domain.Model;
 using VRCEntryBoard.HMI.Exception;
+using VRCEntryBoard.Domain.Exceptions;
 
 namespace VRCEntryBoard.Infra.PlayerRepository
 {
@@ -58,8 +59,11 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             catch (Exception ex)
             {
                 _logger.LogError(ex, "ローカルキャッシュのロードに失敗しました");
-                HandleError("キャッシュ読み込みエラー", 
-                    "プレイヤーデータキャッシュの読み込みに失敗しました。", ex, false);
+                throw new VRCApplicationException(
+                    "キャッシュ読み込みエラー",
+                    "プレイヤーデータキャッシュの読み込みに失敗しました。",
+                    isFatal: false,
+                    innerException: ex);
             }
         }
 
@@ -77,8 +81,11 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             catch (Exception ex)
             {
                 _logger.LogError(ex, "ローカルキャッシュの保存に失敗しました");
-                HandleError("キャッシュ保存エラー", 
-                    "プレイヤーデータキャッシュの保存に失敗しました。", ex, false);
+                throw new VRCApplicationException(
+                    "キャッシュ保存エラー",
+                    "プレイヤーデータキャッシュの保存に失敗しました。",
+                    isFatal: false,
+                    innerException: ex);
             }
         }
 
@@ -279,10 +286,8 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             
             if (isFatal)
             {
-                // 致命的エラーの場合:
-                // 1. UI通知は行わない（通知はアプリケーションのエントリポイントで一元的に処理）
-                // 2. 呼び出し元で例外がスローされ、最終的にProgram.csのグローバルハンドラーで処理
-                return;
+                // 致命的エラーの場合はVRCApplicationExceptionをスロー
+                throw new VRCApplicationException(title, message, isFatal, ex);
             }
             else
             {

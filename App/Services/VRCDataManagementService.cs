@@ -8,6 +8,7 @@ using System.Text.Json;
 using VRCEntryBoard.Infra.VRChat;
 using VRCEntryBoard.Domain.Interfaces;
 using VRCEntryBoard.Domain.Model;
+using VRCEntryBoard.Domain.Exceptions;
 
 namespace VRCEntryBoard.App.Services
 {
@@ -100,7 +101,10 @@ namespace VRCEntryBoard.App.Services
             {
                 if (!File.Exists(_configPath))
                 {
-                    throw new FileNotFoundException("設定ファイルが見つかりません");
+                    throw new VRCApplicationException(
+                        "設定ファイルエラー",
+                        "設定ファイルが見つかりません",
+                        isFatal: true);
                 }
 
                 string jsonContent = File.ReadAllText(_configPath);
@@ -108,24 +112,38 @@ namespace VRCEntryBoard.App.Services
                 
                 if (config == null)
                 {
-                    throw new InvalidOperationException("設定ファイルの読み込みに失敗しました。");
+                    throw new VRCApplicationException(
+                        "設定ファイルエラー",
+                        "設定ファイルの読み込みに失敗しました。",
+                        isFatal: true);
                 }
 
                 // 設定の検証
                 if (config.MonitoredWorldNames == null || !config.MonitoredWorldNames.Any())
                 {
-                    throw new InvalidOperationException("設定が不完全です: 監視対象のワールド名が設定されていません");
+                    throw new VRCApplicationException(
+                        "設定ファイルエラー",
+                        "設定が不完全です: 監視対象のワールド名が設定されていません",
+                        isFatal: true);
                 }
 
                 return config;
             }
             catch (JsonException ex)
             {
-                throw new InvalidOperationException("設定ファイルのJSONフォーマットが不正です", ex);
+                throw new VRCApplicationException(
+                    "設定ファイルエラー",
+                    "設定ファイルのJSONフォーマットが不正です",
+                    isFatal: true,
+                    innerException: ex);
             }
-            catch (Exception ex) when (ex is not FileNotFoundException && ex is not InvalidOperationException)
+            catch (Exception ex) when (ex is not VRCApplicationException)
             {
-                throw new InvalidOperationException("設定ファイルの読み込みに失敗しました。", ex);
+                throw new VRCApplicationException(
+                    "設定ファイルエラー",
+                    "設定ファイルの読み込みに失敗しました。",
+                    isFatal: true,
+                    innerException: ex);
             }
         }
     }
