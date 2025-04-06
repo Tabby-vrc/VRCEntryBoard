@@ -45,6 +45,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 
                 // 接続テスト - オンラインかどうか確認
                 _client = new Supabase.Client(_config.Url, _config.Key, options);
+                /*
                 // 接続を即座にテスト - 失敗したら例外がスローされる
                 var initTask = _client.InitializeAsync();
                 initTask.Wait(TimeSpan.FromSeconds(5)); // 短い待機時間でタイムアウト
@@ -53,6 +54,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 {
                     throw new TimeoutException("Supabase接続のタイムアウト");
                 }
+                */
             }
             catch
             {
