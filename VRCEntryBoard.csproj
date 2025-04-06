@@ -10,6 +10,11 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(OutDir)VRCEntryBoard-config.json&quot; copy &quot;$(ProjectDir)VRCEntryBoard-config.example.json&quot; &quot;$(OutDir)VRCEntryBoard-config.json&quot;" />
+  </Target>
+  
   <ItemGroup>
     <Compile Update="HMI\CEntryView.cs">
       <SubType>UserControl</SubType>
