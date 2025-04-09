@@ -171,6 +171,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                         EntryStatus = (int)player.EntryStatus,
                         StaffStatus = player.StaffStatus,
                         ExpStatus = (int)player.ExpStatus,
+                        RegulationStatus = player.RegulationStatus,
                         JoinStatus = player.JoinStatus
                     };
 
@@ -200,6 +201,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                     player.EntryStatus = (emEntryStatus)getPlayerModel.EntryStatus;
                     player.StaffStatus = getPlayerModel.StaffStatus;
                     player.ExpStatus = (emExpStatus)getPlayerModel.ExpStatus;
+                    player.RegulationStatus = getPlayerModel.RegulationStatus;
                     player.JoinStatus = getPlayerModel.JoinStatus;
                 }
             }
@@ -340,6 +342,40 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         }
 
         /// <summary>
+        /// レギュレーションステータス更新
+        /// </summary>
+        /// <param name="player">更新対象プレイヤー</param>
+        public async Task UpdateRegulationStatus(Player player)
+        {
+            if (player == null)
+            {
+                _logger.LogWarning("プレイヤーオブジェクトがnullのため、レギュレーションステータス更新処理をスキップします");
+                return;
+            }
+
+            try
+            {
+                var getPlayerModel = await _client.From<PlayerModel>()
+                    .Where(x => x.ID == player.ID)
+                    .Single();
+
+                if (null == getPlayerModel)
+                {
+                    _logger.LogWarning("更新対象のプレイヤーが見つかりません: {PlayerName}, ID: {PlayerId}", player.Name, player.ID);
+                    return;
+                }
+
+                getPlayerModel.RegulationStatus = player.RegulationStatus;
+                await getPlayerModel.Update<PlayerModel>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "プレイヤーのレギュレーションステータス更新中に予期せぬエラーが発生しました: {PlayerName}, ID: {PlayerId}", 
+                    player.Name, player.ID);
+            }
+        }
+
+        /// <summary>
         /// Joinステータス更新
         /// </summary>
         /// <param name="players">更新対象プレイヤーリスト</param>
@@ -391,6 +427,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                         updatePlayer.EntryStatus = (emEntryStatus)player.EntryStatus;
                         updatePlayer.StaffStatus = player.StaffStatus;
                         updatePlayer.ExpStatus = (emExpStatus)player.ExpStatus;
+                        updatePlayer.RegulationStatus = player.RegulationStatus;
                         updatePlayer.JoinStatus = player.JoinStatus;
                     }
                     else
@@ -400,6 +437,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                         addPlayer.EntryStatus = (emEntryStatus)player.EntryStatus;
                         addPlayer.StaffStatus = player.StaffStatus;
                         addPlayer.ExpStatus = (emExpStatus)player.ExpStatus;
+                        addPlayer.RegulationStatus = player.RegulationStatus;
                         addPlayer.JoinStatus = player.JoinStatus;
                         _players.Add(addPlayer);
                     }
@@ -467,6 +505,8 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         public bool StaffStatus { get; set; }
         [Column("ExpStatus")]
         public int ExpStatus { get; set; }
+        [Column("RegulationStatus")]
+        public int RegulationStatus { get; set; }
         [Column("JoinStatus")]
         public bool JoinStatus {  get; set; }
     }

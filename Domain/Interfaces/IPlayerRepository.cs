@@ -15,6 +15,7 @@ namespace VRCEntryBoard.Domain.Interfaces
         Task UpdateEntryStatus(Player player);
         Task UpdateStaffStatus(Player player);
         Task UpdateExpStatus(Player player);
+        Task UpdateRegulationStatus(Player player);
         Task UpdateJoinStatus(List<Player> players);
         Task ResyncPlayer();
         Task SubscribeUpdates();
