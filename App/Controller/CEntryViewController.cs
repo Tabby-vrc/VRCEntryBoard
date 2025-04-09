@@ -94,6 +94,21 @@ namespace VRCEntryBoard.App.Controller
         }
 
         /// <summary>
+        /// レギュレーションステータス更新
+        /// </summary>
+        public void UpdateRegulationStatus(string targetPlayerName, int regulationStatus)
+        {
+            var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            targetPlayer.RegulationStatus = regulationStatus;
+            _PlayerRepository.UpdateRegulationStatus(targetPlayer);
+            UpdateNum();
+        }
+        public int GetRegulationStatus(string targetPlayerName)
+        {
+            return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).RegulationStatus;
+        }
+
+        /// <summary>
         /// スタッフステータス更新
         /// </summary>
         public void UpdateStaff(string targetPlayerName, bool isStaff)
