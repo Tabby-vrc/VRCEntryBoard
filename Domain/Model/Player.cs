@@ -21,6 +21,7 @@ namespace VRCEntryBoard.Domain.Model
             EntryStatus = emEntryStatus.AskMe;
             StaffStatus = false;
             ExpStatus = emExpStatus.None;
+            RegulationStatus = 0;
             JoinStatus = true;
             GroupNo = 0;
         }
@@ -75,6 +76,20 @@ namespace VRCEntryBoard.Domain.Model
                 if(emExpStatus.None == value) _expStatus = value;
                 else _expStatus = value;
                 PropertyChanged?.Invoke(this, _expStatusChangedEventArgs);
+            }
+        }
+
+        private static readonly PropertyChangedEventArgs _regulationStatusChangedEventArgs = new PropertyChangedEventArgs(nameof(RegulationStatus));
+        private int _regulationStatus;
+        /// <summary>レギュレーションステータス</summary>
+        public int RegulationStatus
+        {
+            get { return _regulationStatus; }
+            set
+            {
+                if (value == _regulationStatus) return;
+                _regulationStatus = value;
+                PropertyChanged?.Invoke(this, _regulationStatusChangedEventArgs);
             }
         }
 
