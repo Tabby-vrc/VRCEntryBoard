@@ -88,6 +88,8 @@ namespace VRCEntryBoard
                 var factory = provider.GetRequiredService<PlayerRepositoryFactory>();
                 return factory.CreateRepository();
             });
+            services.AddSingleton<SupabaseClient>();
+            services.AddSingleton<IRegulationRepository, SupabaseRegulationRepository>();
 
             // アプリケーション層
             services.AddSingleton<VRCDataManagementService>();

@@ -299,7 +299,7 @@
             this.rBtnReg1.Size = new System.Drawing.Size(136, 56);
             this.rBtnReg1.TabIndex = 25;
             this.rBtnReg1.TabStop = true;
-            this.rBtnReg1.Text = "①レギュ１";
+            this.rBtnReg1.Text = "①";
             this.rBtnReg1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.rBtnReg1.UseVisualStyleBackColor = true;
             this.rBtnReg1.Click += new System.EventHandler(this.rBtnReg1_Click);
@@ -316,7 +316,7 @@
             this.rBtnReg2.Size = new System.Drawing.Size(136, 56);
             this.rBtnReg2.TabIndex = 26;
             this.rBtnReg2.TabStop = true;
-            this.rBtnReg2.Text = "②レギュ２";
+            this.rBtnReg2.Text = "②";
             this.rBtnReg2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.rBtnReg2.UseVisualStyleBackColor = true;
             this.rBtnReg2.Click += new System.EventHandler(this.rBtnReg2_Click);
@@ -350,7 +350,6 @@
             this.gBoxEntry.Name = "gBoxEntry";
             this.gBoxEntry.Size = new System.Drawing.Size(159, 226);
             this.gBoxEntry.TabIndex = 28;
-            this.gBoxEntry.TabStop = false;
             // 
             // gBoxReg
             // 
@@ -362,7 +361,6 @@
             this.gBoxReg.Name = "gBoxReg";
             this.gBoxReg.Size = new System.Drawing.Size(169, 196);
             this.gBoxReg.TabIndex = 29;
-            this.gBoxReg.TabStop = false;
             // 
             // CEntryView
             // 
@@ -387,6 +385,7 @@
             this.Controls.Add(this.gBoxReg);
             this.Name = "CEntryView";
             this.Size = new System.Drawing.Size(1145, 640);
+            this.Load += new System.EventHandler(this.CEntryView_Load);
             this.gBoxEntry.ResumeLayout(false);
             this.gBoxReg.ResumeLayout(false);
             this.ResumeLayout(false);

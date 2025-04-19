@@ -21,14 +21,16 @@ namespace VRCEntryBoard.App.Controller
         private CEntryView _EntryView;
         private CGroupAllocator _GroupAllocator;
         private IPlayerRepository _PlayerRepository;
+        private IRegulationRepository _RegulationRepository;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public CEntryViewController(VRCDataManagementService vrcDataManagementService, IPlayerRepository playerRepository)
+        public CEntryViewController(VRCDataManagementService vrcDataManagementService, IPlayerRepository playerRepository, IRegulationRepository regulationRepository)
         {
             _vrcDataManagementService = vrcDataManagementService;
             _PlayerRepository = playerRepository;
+            _RegulationRepository = regulationRepository;
             _PlayerRepository.SubscribeUpdates();
             _GroupAllocator = new CGroupAllocator();
         }
@@ -36,6 +38,15 @@ namespace VRCEntryBoard.App.Controller
         public void SetView(CEntryView view)
         {
             _EntryView = view;
+        }
+
+        public async Task InitView()
+        {
+            _EntryView.UpdateEntryNum(new EntryNumDto());
+            await _RegulationRepository.UpdateRegulations();
+            _EntryView.SetRegulationName(_RegulationRepository.GetRegulations()[0].RegulationName?? "未設定",
+                                         _RegulationRepository.GetRegulations()[1].RegulationName?? "未設定");
+            await UpdatePlayerList();
         }
 
         /// <summary>

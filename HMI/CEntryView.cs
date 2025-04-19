@@ -17,6 +17,9 @@ namespace VRCEntryBoard.HMI
         private CEntryViewController _controller;
         private PlayerPanel _lastSelectPlayerPanel;
 
+        private static string _reg1Prefix;
+        private static string _reg2Prefix;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -25,10 +28,11 @@ namespace VRCEntryBoard.HMI
         {
             InitializeComponent();
 
+            _reg1Prefix = rBtnReg1.Text;
+            _reg2Prefix = rBtnReg2.Text;
+
             _controller = controller;
             _controller.SetView(this);
-
-            UpdateEntryNum(new EntryNumDto());
 
             this.pnlPlayerList.GetType().InvokeMember(
             "DoubleBuffered",
@@ -52,6 +56,26 @@ namespace VRCEntryBoard.HMI
                 graphics.FillEllipse(brush, 8, 8, 32, 32);
                 kvp.Btn.Image = bitmap;
             }
+        }
+
+        /// <summary>
+        /// ロードイベント
+        /// </summary>
+        private async void CEntryView_Load(object sender, EventArgs e)
+        {
+            // 非同期メソッドを呼び出す
+            await _controller.InitView();
+        }
+
+        /// <summary>
+        /// レギュレーション名を設定
+        /// </summary>
+        /// <param name="reg1Name">レギュレーション1の名前</param>
+        /// <param name="reg2Name">レギュレーション2の名前</param>
+        public void SetRegulationName(string reg1Name, string reg2Name)
+        {
+            rBtnReg1.Text = _reg1Prefix + reg1Name;
+            rBtnReg2.Text = _reg2Prefix + reg2Name;
         }
 
         /// <summary>
