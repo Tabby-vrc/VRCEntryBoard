@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using VRCEntryBoard.HMI;
 using VRCEntryBoard.App.Services;
 using VRCEntryBoard.App.Grouping;
+using VRCEntryBoard.App.UseCase;
 using VRCEntryBoard.Domain.Model;
 using VRCEntryBoard.Domain.Interfaces;
 

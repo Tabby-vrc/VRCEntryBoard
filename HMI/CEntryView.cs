@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using VRCEntryBoard.App.Controller;
 using VRCEntryBoard.Domain.Model;
 using VRCEntryBoard.HMI.CustomUserControl;
-using Microsoft.AspNetCore.Mvc;
+using VRCEntryBoard.App.UseCase;
 
 namespace VRCEntryBoard.HMI
 {
