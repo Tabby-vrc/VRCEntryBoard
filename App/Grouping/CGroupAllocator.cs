@@ -13,8 +13,10 @@ namespace VRCEntryBoard.App.Grouping
     /// </summary>
     internal class CGroupAllocator
     {
-        /// <summary>1グループ当たりの最大人数</summary>
+        /// <summary>通常インスタンス当たりの最大人数</summary>
         private static int MAX_GROUP_SIZE = 8;
+        /// <summary>初心者インスタンス当たりの最大人数</summary>
+        private static int MAX_BEGINNER_GROUP_SIZE = 16;
         /// <summary>初心者インスタンス必要最低人数</summary>
         private static int BEGINERGROUP_NEEDS_LOWESTCOUNT = 4;
 
@@ -41,7 +43,7 @@ namespace VRCEntryBoard.App.Grouping
             List<int> beginnerGroupNumList = new List<int>();                                                       // 初心者インスタンス番号リスト.
             if (needsBeginnerGroup)
             {
-                GroupCountCalculation(beginnerPlayerCount, out beginnerGroupNumList);
+                GroupCountCalculation(beginnerPlayerCount, MAX_BEGINNER_GROUP_SIZE, out beginnerGroupNumList);
             }
 
 
@@ -61,7 +63,7 @@ namespace VRCEntryBoard.App.Grouping
             }
             int reg1PlayerCount = reg1Players.Count;
             List<int> reg1GroupNumList = new List<int>();                                                         // 通常インスタンス番号リスト.
-            GroupCountCalculation(reg1PlayerCount, out reg1GroupNumList);                                         // 経験者数.
+            GroupCountCalculation(reg1PlayerCount, MAX_GROUP_SIZE, out reg1GroupNumList);                                         // 経験者数.
 
 
             /////////////////////////////////////
@@ -80,7 +82,7 @@ namespace VRCEntryBoard.App.Grouping
             }
             int reg2PlayerCount = reg2Players.Count;
             List<int> reg2GroupNumList = new List<int>();                                                         // 通常インスタンス番号リスト.
-            GroupCountCalculation(reg2PlayerCount, out reg2GroupNumList);                                         // 経験者数.
+            GroupCountCalculation(reg2PlayerCount, MAX_GROUP_SIZE, out reg2GroupNumList);                                         // 経験者数.
 
             /////////////////////////////////////
             // スタッフ割り当て作業.
@@ -178,13 +180,13 @@ namespace VRCEntryBoard.App.Grouping
         /// </summary>
         /// <param name="playerCount"></param>
         /// <param name="groupCountList"></param>
-        private void GroupCountCalculation(int playerCount, out List<int> groupCountList)
+        private void GroupCountCalculation(int playerCount, int maxGroupSize, out List<int> groupCountList)
         {
             groupCountList = new List<int>();
             if (0 >= playerCount) return;
 
             // グループ数
-            int groupCount = (int)Math.Ceiling( (float)playerCount / MAX_GROUP_SIZE );
+            int groupCount = (int)Math.Ceiling( (float)playerCount / maxGroupSize );
             // 1グループ当たりの人数
             int playerParGroup = playerCount / groupCount;
             bool isPlayerEvenNumber = playerParGroup % 2 == 0;
