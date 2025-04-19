@@ -223,7 +223,7 @@ namespace VRCEntryBoard.HMI
         private void rBtnBeginner_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateBeginnerStatus(_lastSelectPlayerPanel.PlayerName, (sender as CheckBox).Checked);
+            _controller.UpdateBeginnerStatus(_lastSelectPlayerPanel.PlayerName, true);
         }
 
         /// <summary>
