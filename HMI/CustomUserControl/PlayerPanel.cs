@@ -68,6 +68,18 @@ namespace VRCEntryBoard.HMI.CustomUserControl
             }
         }
         /// <summary>
+        /// レギュレーションアイコン表示（プロパティ）
+        /// </summary>
+        public int RegulationIconVisible
+        {
+            // get { return 0; }
+            set
+            {
+                this.picReg1Icon.Visible = value == 1;
+                this.picReg2Icon.Visible = value == 2;
+            }
+        }
+        /// <summary>
         /// 経験アイコン表示（プロパティ）
         /// </summary>
         public emExpStatus ExpIconVisible

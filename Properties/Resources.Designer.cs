@@ -93,6 +93,26 @@ namespace VRCEntryBoard.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        internal static System.Drawing.Bitmap Reg1_48 {
+            get {
+                object obj = ResourceManager.GetObject("Reg1_48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
+        internal static System.Drawing.Bitmap Reg2_48 {
+            get {
+                object obj = ResourceManager.GetObject("Reg2_48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         internal static System.Drawing.Bitmap renew_48 {
             get {
                 object obj = ResourceManager.GetObject("renew_48", resourceCulture);

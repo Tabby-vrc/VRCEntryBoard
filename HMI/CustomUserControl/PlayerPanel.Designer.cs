@@ -30,16 +30,20 @@
         {
             this.lblPlayerName = new System.Windows.Forms.Label();
             this.lblEntryStatus = new System.Windows.Forms.Label();
+            this.picReg1Icon = new System.Windows.Forms.PictureBox();
+            this.picReg2Icon = new System.Windows.Forms.PictureBox();
+            this.picBeginnerIcon = new System.Windows.Forms.PictureBox();
             this.picNewUserIcon = new System.Windows.Forms.PictureBox();
             this.picErrorIcon = new System.Windows.Forms.PictureBox();
             this.picStaffIcon = new System.Windows.Forms.PictureBox();
             this.picEntryIcon = new System.Windows.Forms.PictureBox();
-            this.picBeginnerIcon = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.picReg1Icon)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picReg2Icon)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picBeginnerIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picNewUserIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picErrorIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picStaffIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picEntryIcon)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picBeginnerIcon)).BeginInit();
             this.SuspendLayout();
             // 
             // lblPlayerName
@@ -64,6 +68,42 @@
             this.lblEntryStatus.TabIndex = 1;
             this.lblEntryStatus.Text = "未確認";
             this.lblEntryStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // picReg1Icon
+            // 
+            this.picReg1Icon.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.picReg1Icon.Image = global::VRCEntryBoard.Properties.Resources.Reg1_48;
+            this.picReg1Icon.Location = new System.Drawing.Point(187, 26);
+            this.picReg1Icon.Margin = new System.Windows.Forms.Padding(3, 3, 6, 8);
+            this.picReg1Icon.Name = "picReg1Icon";
+            this.picReg1Icon.Size = new System.Drawing.Size(30, 30);
+            this.picReg1Icon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picReg1Icon.TabIndex = 8;
+            this.picReg1Icon.TabStop = false;
+            // 
+            // picReg2Icon
+            // 
+            this.picReg2Icon.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.picReg2Icon.Image = global::VRCEntryBoard.Properties.Resources.Reg2_48;
+            this.picReg2Icon.Location = new System.Drawing.Point(187, 26);
+            this.picReg2Icon.Margin = new System.Windows.Forms.Padding(3, 3, 6, 8);
+            this.picReg2Icon.Name = "picReg2Icon";
+            this.picReg2Icon.Size = new System.Drawing.Size(30, 30);
+            this.picReg2Icon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picReg2Icon.TabIndex = 7;
+            this.picReg2Icon.TabStop = false;
+            // 
+            // picBeginnerIcon
+            // 
+            this.picBeginnerIcon.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.picBeginnerIcon.Image = global::VRCEntryBoard.Properties.Resources.newuser_48;
+            this.picBeginnerIcon.Location = new System.Drawing.Point(187, 26);
+            this.picBeginnerIcon.Margin = new System.Windows.Forms.Padding(3, 3, 6, 8);
+            this.picBeginnerIcon.Name = "picBeginnerIcon";
+            this.picBeginnerIcon.Size = new System.Drawing.Size(30, 30);
+            this.picBeginnerIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picBeginnerIcon.TabIndex = 6;
+            this.picBeginnerIcon.TabStop = false;
             // 
             // picNewUserIcon
             // 
@@ -109,18 +149,6 @@
             this.picEntryIcon.TabIndex = 2;
             this.picEntryIcon.TabStop = false;
             // 
-            // picBeginnerIcon
-            // 
-            this.picBeginnerIcon.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.picBeginnerIcon.Image = global::VRCEntryBoard.Properties.Resources.newuser_48;
-            this.picBeginnerIcon.Location = new System.Drawing.Point(187, 26);
-            this.picBeginnerIcon.Margin = new System.Windows.Forms.Padding(3, 3, 6, 8);
-            this.picBeginnerIcon.Name = "picBeginnerIcon";
-            this.picBeginnerIcon.Size = new System.Drawing.Size(30, 30);
-            this.picBeginnerIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.picBeginnerIcon.TabIndex = 6;
-            this.picBeginnerIcon.TabStop = false;
-            // 
             // PlayerPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -128,6 +156,8 @@
             this.BackColor = System.Drawing.Color.White;
             this.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.Controls.Add(this.picBeginnerIcon);
+            this.Controls.Add(this.picReg1Icon);
+            this.Controls.Add(this.picReg2Icon);
             this.Controls.Add(this.picNewUserIcon);
             this.Controls.Add(this.picErrorIcon);
             this.Controls.Add(this.picStaffIcon);
@@ -138,11 +168,13 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "PlayerPanel";
             this.Size = new System.Drawing.Size(221, 60);
+            ((System.ComponentModel.ISupportInitialize)(this.picReg1Icon)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picReg2Icon)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picBeginnerIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picNewUserIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picErrorIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picStaffIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picEntryIcon)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picBeginnerIcon)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -155,5 +187,7 @@
         private System.Windows.Forms.PictureBox picNewUserIcon;
         private System.Windows.Forms.PictureBox picErrorIcon;
         private System.Windows.Forms.PictureBox picBeginnerIcon;
+        private System.Windows.Forms.PictureBox picReg2Icon;
+        private System.Windows.Forms.PictureBox picReg1Icon;
     }
 }

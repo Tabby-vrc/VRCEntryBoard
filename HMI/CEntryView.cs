@@ -71,6 +71,7 @@ namespace VRCEntryBoard.HMI
                 };
                 playerPanel.PlayerName = player.Name;
                 playerPanel.EntryStatusText = player.EntryStatus;
+                playerPanel.RegulationIconVisible = player.RegulationStatus;
                 playerPanel.ExpIconVisible = player.ExpStatus;
                 playerPanel.StaffIconVisible = player.StaffStatus;
                 playerPanel.ErrorIconVisible = !player.JoinStatus;
@@ -81,6 +82,10 @@ namespace VRCEntryBoard.HMI
                     if (nameof(player.EntryStatus) == arg.PropertyName)
                     {
                         playerPanel.EntryStatusText = player.EntryStatus;
+                    }
+                    if (nameof(player.RegulationStatus) == arg.PropertyName)
+                    {
+                        playerPanel.RegulationIconVisible = player.RegulationStatus;
                     }
                     if (nameof(player.ExpStatus) == arg.PropertyName)
                     {
