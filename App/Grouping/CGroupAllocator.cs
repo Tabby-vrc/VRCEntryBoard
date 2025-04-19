@@ -34,7 +34,7 @@ namespace VRCEntryBoard.App.Grouping
             
             /////////////////////////////////////
             // 初心者割り当て準備.
-            List<Player> beginnerPlayers = players.Where(p => emEntryStatus.Entry == p.EntryStatus &&
+            List<Player> beginnerPlayers = players.Where(p => p.EntryStatus == emEntryStatus.Entry &&
                                                               p.ExpStatus.HasFlag(emExpStatus.Beginner)).ToList();  // 初心者プレイヤーリスト.
             int beginnerPlayerCount = beginnerPlayers.Count;                                                        // 初心者数.
             bool needsBeginnerGroup = beginnerPlayerCount >= BEGINERGROUP_NEEDS_LOWESTCOUNT;
@@ -46,27 +46,52 @@ namespace VRCEntryBoard.App.Grouping
 
 
             /////////////////////////////////////
-            // 経験者割り当て準備.
-            List<Player> normalPlayers = new List<Player>();                                                        // 経験者プレイヤーリスト.
+            // レギュレーション1割り当て準備.
+            List<Player> reg1Players = new List<Player>();                                                        // 経験者プレイヤーリスト.
             if (needsBeginnerGroup)
             {
-                normalPlayers = players.Where(p => emEntryStatus.Entry == p.EntryStatus &&
-                                                   !p.ExpStatus.HasFlag(emExpStatus.Beginner)).ToList();
+                reg1Players = players.Where(p => p.EntryStatus == emEntryStatus.Entry &&
+                                                 !p.ExpStatus.HasFlag(emExpStatus.Beginner) &&
+                                                 p.RegulationStatus == 1).ToList();
             }
             else
             {
-                normalPlayers = players.Where(p => emEntryStatus.Entry == p.EntryStatus).ToList();                  // エントリープレイヤーリスト.
+                reg1Players = players.Where(p => p.EntryStatus == emEntryStatus.Entry &&
+                                                 p.RegulationStatus == 1).ToList();
             }
-            int normalPlayerCount = normalPlayers.Count;
-            List<int> normalGroupNumList = new List<int>();                                                         // 通常インスタンス番号リスト.
-            GroupCountCalculation(normalPlayerCount, out normalGroupNumList);                                       // 経験者数.
+            int reg1PlayerCount = reg1Players.Count;
+            List<int> reg1GroupNumList = new List<int>();                                                         // 通常インスタンス番号リスト.
+            GroupCountCalculation(reg1PlayerCount, out reg1GroupNumList);                                         // 経験者数.
 
 
             /////////////////////////////////////
+            // レギュレーション2割り当て準備.
+            List<Player> reg2Players = new List<Player>();                                                        // 経験者プレイヤーリスト.
+            if (needsBeginnerGroup)
+            {
+                reg2Players = players.Where(p => p.EntryStatus == emEntryStatus.Entry &&
+                                                 !p.ExpStatus.HasFlag(emExpStatus.Beginner) &&
+                                                 p.RegulationStatus == 2).ToList();
+            }
+            else
+            {
+                reg2Players = players.Where(p => p.EntryStatus == emEntryStatus.Entry &&
+                                                 p.RegulationStatus == 2).ToList();
+            }
+            int reg2PlayerCount = reg2Players.Count;
+            List<int> reg2GroupNumList = new List<int>();                                                         // 通常インスタンス番号リスト.
+            GroupCountCalculation(reg2PlayerCount, out reg2GroupNumList);                                         // 経験者数.
+
+            /////////////////////////////////////
             // スタッフ割り当て作業.
+            
+            // レギュ2以降のインスタンス番号を更新.
+            int reg1MaxNum = reg1GroupNumList.Max();
+            int reg2MaxNum = reg2GroupNumList.Max();
+            reg2GroupNumList = reg2GroupNumList.Select(num => num += reg1MaxNum).ToList();
+            beginnerGroupNumList = beginnerGroupNumList.Select(num => num += reg1MaxNum + reg2MaxNum).ToList();
+            
             // 初心者インスタンス割り当て.
-            int normalMaxNum = normalGroupNumList.Max();
-            beginnerGroupNumList = beginnerGroupNumList.Select(num => num += normalMaxNum).ToList();
             List<int> uniqueBeginnerNumList = ExtractAndRemoveUniqueNumbers(beginnerGroupNumList);
             foreach(Player staff in beginnerPlayers.Where(p => 0 == p.GroupNo &&
                                                                true == p.StaffStatus))
@@ -78,18 +103,30 @@ namespace VRCEntryBoard.App.Grouping
             }
             // 割り当たたなかった分を返却.
             beginnerGroupNumList.AddRange(uniqueBeginnerNumList);
-            // 経験者インスタンス割り当て.
-            List<int> uniqueNormalNumList = ExtractAndRemoveUniqueNumbers(normalGroupNumList);
-            foreach(Player staff in normalPlayers.Where(p => 0 == p.GroupNo &&
+            // レギュ1インスタンス割り当て.
+            List<int> uniqueReg1NumList = ExtractAndRemoveUniqueNumbers(reg1GroupNumList);
+            foreach(Player staff in reg1Players.Where(p => 0 == p.GroupNo &&
                                                              true == p.StaffStatus))
             {
-                if (uniqueNormalNumList.Count <= 0) break;
+                if (uniqueReg1NumList.Count <= 0) break;
 
-                staff.GroupNo = uniqueNormalNumList[0];
-                uniqueNormalNumList.RemoveAt(0);
+                staff.GroupNo = uniqueReg1NumList[0];
+                uniqueReg1NumList.RemoveAt(0);
             }
             // 割り当たたなかった分を返却.
-            normalGroupNumList.AddRange(uniqueNormalNumList);
+            reg1GroupNumList.AddRange(uniqueReg1NumList);
+            // レギュ2インスタンス割り当て.
+            List<int> uniqueReg2NumList = ExtractAndRemoveUniqueNumbers(reg2GroupNumList);
+            foreach(Player staff in reg2Players.Where(p => 0 == p.GroupNo &&
+                                                             true == p.StaffStatus))
+            {
+                if (uniqueReg2NumList.Count <= 0) break;
+
+                staff.GroupNo = uniqueReg2NumList[0];
+                uniqueReg2NumList.RemoveAt(0);
+            }
+            // 割り当たたなかった分を返却.
+            reg2GroupNumList.AddRange(uniqueReg2NumList);
 
 
             /////////////////////////////////////
@@ -107,16 +144,33 @@ namespace VRCEntryBoard.App.Grouping
 
 
             /////////////////////////////////////
-            // 経験者割り当て作業.
-            foreach (Player normal in normalPlayers.Where(p => 0 == p.GroupNo))
+            // レギュ1割り当て作業.
+            foreach (Player normal in reg1Players.Where(p => 0 == p.GroupNo))
             {
-                if (normalGroupNumList.Count <= 0) break;
+                if (reg1GroupNumList.Count <= 0) break;
 
-                int index = rand.Next(0, normalGroupNumList.Count);
-                normal.GroupNo = normalGroupNumList[index];
-                normalGroupNumList.RemoveAt(index);
+                int index = rand.Next(0, reg1GroupNumList.Count);
+                normal.GroupNo = reg1GroupNumList[index];
+                reg1GroupNumList.RemoveAt(index);
             }
-            normalPlayers.Where(p => 0 == p.GroupNo).ToList().ForEach(p => p.GroupNo = 999);
+            reg1Players.Where(p => 0 == p.GroupNo).ToList().ForEach(p => p.GroupNo = 999);
+
+
+            /////////////////////////////////////
+            // レギュ2割り当て作業.
+            foreach (Player normal in reg2Players.Where(p => 0 == p.GroupNo))
+            {
+                if (reg2GroupNumList.Count <= 0) break;
+
+                int index = rand.Next(0, reg2GroupNumList.Count);
+                normal.GroupNo = reg2GroupNumList[index];
+                reg2GroupNumList.RemoveAt(index);
+            }
+            reg2Players.Where(p => 0 == p.GroupNo).ToList().ForEach(p => p.GroupNo = 999);
+
+            // 割り当てなかったプレイヤーを999にする.
+            players.Where(p => p.EntryStatus == emEntryStatus.Entry &&
+                               p.GroupNo == 0).ToList().ForEach(p => p.GroupNo = 999);
         }
 
         /// <summary>

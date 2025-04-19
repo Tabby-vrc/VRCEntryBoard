@@ -21,7 +21,7 @@ namespace VRCEntryBoard.Domain.Model
             EntryStatus = emEntryStatus.AskMe;
             StaffStatus = false;
             ExpStatus = emExpStatus.None;
-            RegulationStatus = 0;
+            RegulationStatus = 1;
             JoinStatus = true;
             GroupNo = 0;
         }

@@ -49,10 +49,11 @@ namespace VRCEntryBoard.App.Controller
             var query = _PlayerRepository.GetPlayers().OrderBy(player =>
             {
                 int order = player.EntryStatus == emEntryStatus.AskMe ? 3 : player.EntryStatus == emEntryStatus.Visiter ? 2 : 1;
+                int regulation = player.RegulationStatus;
                 int newUser = player.ExpStatus.HasFlag(emExpStatus.Beginner) ? 3 : player.ExpStatus.HasFlag(emExpStatus.NewUser) ? 2 : 1;
                 int staff = player.StaffStatus ? 2 : 1;
                 int left = player.JoinStatus ? 1 : 1000;
-                return (order * 100 + staff * 10 + newUser) * left;
+                return (order * 100 + staff * 10 + regulation + newUser) * left;
             }).ToList();
 
             _EntryView.UpdatePlayerList(query);
@@ -107,6 +108,7 @@ namespace VRCEntryBoard.App.Controller
             var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
             if (isBeginner) targetPlayer.ExpStatus |= emExpStatus.Beginner;
             else            targetPlayer.ExpStatus &= ~emExpStatus.Beginner;
+            targetPlayer.RegulationStatus = 0;
             _PlayerRepository.UpdateExpStatus(targetPlayer);
             UpdateNum();
         }
