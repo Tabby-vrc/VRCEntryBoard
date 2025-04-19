@@ -34,7 +34,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1144, 532);
+            this.ClientSize = new System.Drawing.Size(1129, 638);
             this.Name = "MainForm";
             this.Text = "VRCEntryBoard";
             this.ResumeLayout(false);

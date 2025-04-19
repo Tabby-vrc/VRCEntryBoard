@@ -113,7 +113,7 @@ namespace VRCEntryBoard.HMI
         /// <param name="totalNum">トータル数</param>
         public void UpdateEntryNum(int entryNum, int beginnerNum, int staffNum, int instanceNum)
         {
-            this.lblEntryNum.Text = entryNum.ToString();
+            this.lblReg1Num.Text = entryNum.ToString();
             this.lblBeginnerNum.Text = beginnerNum.ToString();
             this.lblStaffNum.Text = staffNum.ToString();
             this.lblInstanceNum.Text = instanceNum.ToString();
@@ -206,10 +206,20 @@ namespace VRCEntryBoard.HMI
             _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.AskMe);
         }
 
+
+        private void rBtnReg1_Click(object sender, EventArgs e)
+        {
+            if (null == _lastSelectPlayerPanel) return;
+        }
+        private void rBtnReg2_Click(object sender, EventArgs e)
+        {
+            if (null == _lastSelectPlayerPanel) return;
+        }
+
         /// <summary>
         /// 初心者ステータス更新
         /// </summary>
-        private void chkBoxBeginner_Click(object sender, EventArgs e)
+        private void rBtnBeginner_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
             _controller.UpdateBeginnerStatus(_lastSelectPlayerPanel.PlayerName, (sender as CheckBox).Checked);
@@ -251,11 +261,14 @@ namespace VRCEntryBoard.HMI
                 rBtnNone.Checked = true;
             }
 
+            // レギュレーションボタンセット.
+
+
             // 初心者ボタンセット.
-            this.chkBoxBeginner.Checked = (expStatus & emExpStatus.Beginner) == emExpStatus.Beginner;
+            rBtnBeginner.Checked = (expStatus & emExpStatus.Beginner) == emExpStatus.Beginner;
 
             // スタッフボタンセット.
-            this.chkBoxStaff.Checked = isStarff;
+            chkBoxStaff.Checked = isStarff;
         }
 
         /// <summary>
@@ -264,8 +277,8 @@ namespace VRCEntryBoard.HMI
         private void ReSetStatusUI()
         {
             rBtnNone.Checked = true;
-            this.chkBoxBeginner.Checked = false;
-            this.chkBoxStaff.Checked = false;
+            rBtnReg1.Checked = true;
+            chkBoxStaff.Checked = false;
         }
     }
 }
