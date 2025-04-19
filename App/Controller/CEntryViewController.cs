@@ -56,8 +56,9 @@ namespace VRCEntryBoard.App.Controller
 
             _EntryView.UpdatePlayerList(query);
 
-            GetEntryNum(out int entryNum, out int beginnerNum, out int staffNum, out int instanceNum);
-            _EntryView.UpdateEntryNum(entryNum, beginnerNum, staffNum, instanceNum);
+            EntryNumDto entryNumDto = new EntryNumDto();
+            GetEntryNum(entryNumDto);
+            _EntryView.UpdateEntryNum(entryNumDto);
         }
 
         /// <summary>
@@ -78,8 +79,28 @@ namespace VRCEntryBoard.App.Controller
         }
 
         /// <summary>
+        /// レギュレーションステータス更新
+        /// </summary>
+        /// <param name="targetPlayerName">更新対象プレイヤー名</param>
+        /// <param name="regStatus">更新ステータス</param>  
+        public void UpdateRegulationStatus(string targetPlayerName, int regStatus)
+        {
+            var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            targetPlayer.RegulationStatus = regStatus;
+            targetPlayer.ExpStatus &= ~emExpStatus.Beginner;
+            _PlayerRepository.UpdateRegulationStatus(targetPlayer);
+            UpdateNum();
+        }
+        public int GetRegulationStatus(string targetPlayerName)
+        {
+            return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).RegulationStatus;
+        }
+
+        /// <summary>
         /// 初心者ステータス更新
         /// </summary>
+        /// <param name="targetPlayerName">更新対象プレイヤー名</param>
+        /// <param name="isBeginner">更新ステータス</param>
         public void UpdateBeginnerStatus(string targetPlayerName, bool isBeginner)
         {
             var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
@@ -91,21 +112,6 @@ namespace VRCEntryBoard.App.Controller
         public emExpStatus GetExpStatus(string targetPlayerName)
         {
             return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).ExpStatus;
-        }
-
-        /// <summary>
-        /// レギュレーションステータス更新
-        /// </summary>
-        public void UpdateRegulationStatus(string targetPlayerName, int regulationStatus)
-        {
-            var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
-            targetPlayer.RegulationStatus = regulationStatus;
-            _PlayerRepository.UpdateRegulationStatus(targetPlayer);
-            UpdateNum();
-        }
-        public int GetRegulationStatus(string targetPlayerName)
-        {
-            return _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName).RegulationStatus;
         }
 
         /// <summary>
@@ -125,8 +131,9 @@ namespace VRCEntryBoard.App.Controller
 
         private void UpdateNum()
         {
-            GetEntryNum(out int entryNum, out int beginnerNum, out int staffNum, out int instanceNum);
-            this._EntryView.UpdateEntryNum(entryNum, beginnerNum, staffNum, instanceNum);
+            EntryNumDto entryNumDto = new EntryNumDto();
+            GetEntryNum(entryNumDto);
+            this._EntryView.UpdateEntryNum(entryNumDto);
         }
 
         public void GroupingPlayerList()
@@ -251,8 +258,9 @@ namespace VRCEntryBoard.App.Controller
                 player.EntryStatus = emEntryStatus.Visiter;
             }
 
-            GetEntryNum(out int entryNum, out int beginnerNum, out int staffNum, out int instanceNum);
-            this._EntryView.UpdateEntryNum(entryNum, beginnerNum, staffNum, instanceNum);
+            EntryNumDto entryNumDto = new EntryNumDto();
+            GetEntryNum(entryNumDto);
+            this._EntryView.UpdateEntryNum(entryNumDto);
         }
 
         /// <summary>
@@ -261,15 +269,18 @@ namespace VRCEntryBoard.App.Controller
         /// <param name="entryNum">参加人数</param>
         /// <param name="beginnerNum">初心者人数</param>
         /// <param name="staffNum">スタッフ人数</param>
-        private void GetEntryNum(out int entryNum, out int beginnerNum, out int staffNum, out int instanceNum)
+        private void GetEntryNum(EntryNumDto entryNumDto)
         {
             var playerList = _PlayerRepository.GetPlayers();
             var entryList = playerList.Where(p => p.EntryStatus == emEntryStatus.Entry);
 
-            entryNum = entryList.Count(p => !p.ExpStatus.HasFlag(emExpStatus.Beginner));
-            beginnerNum = entryList.Count(p => p.ExpStatus.HasFlag(emExpStatus.Beginner));
-            staffNum = playerList.Count(p => p.StaffStatus == true);
-            instanceNum = (int)Math.Ceiling(entryNum / 8f) + (int)Math.Ceiling(beginnerNum / 8f);
+            entryNumDto.Reg1Num = entryList.Count(p => p.RegulationStatus == 1);
+            entryNumDto.Reg2Num = entryList.Count(p => p.RegulationStatus == 2);
+            entryNumDto.BeginnerNum = entryList.Count(p => p.ExpStatus.HasFlag(emExpStatus.Beginner));
+            entryNumDto.StaffNum = playerList.Count(p => p.StaffStatus == true);
+            entryNumDto.InstanceNum = (int)Math.Ceiling(entryNumDto.Reg1Num / 8f)
+                                    + (int)Math.Ceiling(entryNumDto.Reg2Num / 8f)
+                                    + (int)Math.Ceiling(entryNumDto.BeginnerNum / 16f);
         }
     }
 }

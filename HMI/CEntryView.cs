@@ -28,7 +28,7 @@ namespace VRCEntryBoard.HMI
             _controller = controller;
             _controller.SetView(this);
 
-            UpdateEntryNum(0, 0, 0, 0);
+            UpdateEntryNum(new EntryNumDto());
 
             this.pnlPlayerList.GetType().InvokeMember(
             "DoubleBuffered",
@@ -109,14 +109,14 @@ namespace VRCEntryBoard.HMI
         /// <summary>
         /// 参加者数アップデート
         /// </summary>
-        /// <param name="entryNum">参加者数</param>
-        /// <param name="totalNum">トータル数</param>
-        public void UpdateEntryNum(int entryNum, int beginnerNum, int staffNum, int instanceNum)
+        /// <param name="entryNumDto">参加者数データ</param>
+        public void UpdateEntryNum(EntryNumDto entryNumDto)
         {
-            this.lblReg1Num.Text = entryNum.ToString();
-            this.lblBeginnerNum.Text = beginnerNum.ToString();
-            this.lblStaffNum.Text = staffNum.ToString();
-            this.lblInstanceNum.Text = instanceNum.ToString();
+            this.lblReg1Num.Text = entryNumDto.Reg1Num.ToString();
+            this.lblReg2Num.Text = entryNumDto.Reg2Num.ToString();
+            this.lblBeginnerNum.Text = entryNumDto.BeginnerNum.ToString();
+            this.lblStaffNum.Text = entryNumDto.StaffNum.ToString();
+            this.lblInstanceNum.Text = entryNumDto.InstanceNum.ToString();
         }
 
         /// <summary>
@@ -206,14 +206,15 @@ namespace VRCEntryBoard.HMI
             _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.AskMe);
         }
 
-
         private void rBtnReg1_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
+            _controller.UpdateRegulationStatus(_lastSelectPlayerPanel.PlayerName, 1);
         }
         private void rBtnReg2_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
+            _controller.UpdateRegulationStatus(_lastSelectPlayerPanel.PlayerName, 2);
         }
 
         /// <summary>
@@ -240,8 +241,9 @@ namespace VRCEntryBoard.HMI
         private void SetStatusUI(string playerName)
         {
             emEntryStatus entryStatus  = _controller.GetEntryStatus(playerName);
-            emExpStatus expStatus     = _controller.GetExpStatus(playerName);
-            bool isStarff       = _controller.GetStaff(playerName);
+            int regStatus              = _controller.GetRegulationStatus(playerName);
+            emExpStatus expStatus      = _controller.GetExpStatus(playerName);
+            bool isStarff              = _controller.GetStaff(playerName);
 
             // エントリーボタンセット.
             if (emEntryStatus.Entry == entryStatus)
@@ -262,7 +264,14 @@ namespace VRCEntryBoard.HMI
             }
 
             // レギュレーションボタンセット.
-
+            if(regStatus == 1)
+            {
+                rBtnReg1.Checked = true;
+            }
+            else if(regStatus == 2)
+            {
+                rBtnReg2.Checked = true;
+            }
 
             // 初心者ボタンセット.
             rBtnBeginner.Checked = (expStatus & emExpStatus.Beginner) == emExpStatus.Beginner;
