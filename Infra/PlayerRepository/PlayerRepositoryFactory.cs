@@ -14,12 +14,14 @@ namespace VRCEntryBoard.Infra.PlayerRepository
     {
         private readonly ILogger<PlayerRepositoryFactory> _logger;
         private readonly IExceptionNotifier _exceptionNotifier;
+        private readonly SupabaseClient _supabaseClient;
 
-        public PlayerRepositoryFactory(IExceptionNotifier exceptionNotifier)
+        public PlayerRepositoryFactory(SupabaseClient supabaseClient, IExceptionNotifier exceptionNotifier)
         {
             _exceptionNotifier = exceptionNotifier ?? 
                 throw new ArgumentNullException(nameof(exceptionNotifier));
             _logger = LogManager.GetLogger<PlayerRepositoryFactory>();
+            _supabaseClient = supabaseClient;
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             try
             {
                 _logger.LogInformation("オンラインモードでのリポジトリ初期化を試みます");
-                return new SupabaseClient(_exceptionNotifier);
+                return new SupabasePlayerRepository(_supabaseClient, _exceptionNotifier);
             }
             catch (Exception ex)
             {

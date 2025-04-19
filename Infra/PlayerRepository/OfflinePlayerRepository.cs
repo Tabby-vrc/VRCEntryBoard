@@ -121,6 +121,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 existingPlayer.EntryStatus = player.EntryStatus;
                 existingPlayer.StaffStatus = player.StaffStatus;
                 existingPlayer.ExpStatus = player.ExpStatus;
+                existingPlayer.RegulationStatus = player.RegulationStatus;
                 existingPlayer.JoinStatus = player.JoinStatus;
             }
 
@@ -206,6 +207,26 @@ namespace VRCEntryBoard.Infra.PlayerRepository
             if (targetPlayer != null)
             {
                 targetPlayer.ExpStatus = player.ExpStatus;
+                SaveCache();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// レギュレーションステータス更新
+        /// </summary>
+        public Task UpdateRegulationStatus(Player player)
+        {
+            if (player == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            var targetPlayer = _players.Find(p => p.ID == player.ID || p.Name == player.Name);
+            if (targetPlayer != null)
+            {
+                targetPlayer.RegulationStatus = player.RegulationStatus;
                 SaveCache();
             }
 
