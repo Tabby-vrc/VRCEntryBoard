@@ -288,8 +288,10 @@ namespace VRCEntryBoard.App.Controller
             var playerList = _PlayerRepository.GetPlayers();
             var entryList = playerList.Where(p => p.EntryStatus == emEntryStatus.Entry);
 
-            entryNumDto.Reg1Num = entryList.Count(p => p.RegulationStatus == 1);
-            entryNumDto.Reg2Num = entryList.Count(p => p.RegulationStatus == 2);
+            entryNumDto.Reg1Num = entryList.Count(p => p.RegulationStatus == 1 &&
+                                                        !p.ExpStatus.HasFlag(emExpStatus.Beginner));
+            entryNumDto.Reg2Num = entryList.Count(p => p.RegulationStatus == 2 &&
+                                                        !p.ExpStatus.HasFlag(emExpStatus.Beginner));
             entryNumDto.BeginnerNum = entryList.Count(p => p.ExpStatus.HasFlag(emExpStatus.Beginner));
             entryNumDto.StaffNum = playerList.Count(p => p.StaffStatus == true);
             entryNumDto.InstanceNum = (int)Math.Ceiling(entryNumDto.Reg1Num / 8f)
