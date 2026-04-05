@@ -247,6 +247,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 }
 
                 getPlayerModel.ExpStatus = (int)player.ExpStatus;
+                getPlayerModel.RegulationStatus = player.RegulationStatus;
                 await getPlayerModel.Update<PlayerModel>();
             }
             catch (Exception ex)
@@ -280,6 +281,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                     return;
                 }
 
+                getPlayerModel.ExpStatus = (int)player.ExpStatus;
                 getPlayerModel.RegulationStatus = player.RegulationStatus;
                 await getPlayerModel.Update<PlayerModel>();
             }
