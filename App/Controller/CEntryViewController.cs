@@ -31,7 +31,6 @@ namespace VRCEntryBoard.App.Controller
             _vrcDataManagementService = vrcDataManagementService;
             _PlayerRepository = playerRepository;
             _RegulationRepository = regulationRepository;
-            _PlayerRepository.SubscribeUpdates();
             _GroupAllocator = new CGroupAllocator();
         }
 
@@ -47,6 +46,8 @@ namespace VRCEntryBoard.App.Controller
             _EntryView.SetRegulationName(_RegulationRepository.GetRegulations()[0].RegulationName?? "未設定",
                                          _RegulationRepository.GetRegulations()[1].RegulationName?? "未設定");
             await UpdatePlayerList();
+            _PlayerRepository.OnPlayerDataChanged += UpdateNum;
+            await _PlayerRepository.SubscribeUpdates();
         }
 
         /// <summary>
@@ -148,6 +149,14 @@ namespace VRCEntryBoard.App.Controller
             EntryNumDto entryNumDto = new EntryNumDto();
             GetEntryNum(entryNumDto);
             this._EntryView.UpdateEntryNum(entryNumDto);
+        }
+
+        /// <summary>
+        /// リアルタイム購読の解除
+        /// </summary>
+        public void Unsubscribe()
+        {
+            _PlayerRepository.Unsubscribe();
         }
 
         public void GroupingPlayerList()

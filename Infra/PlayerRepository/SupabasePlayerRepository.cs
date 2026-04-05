@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Supabase;
 using Supabase.Postgrest;
 using Supabase.Postgrest.Models;
+using Supabase.Realtime;
+using Supabase.Realtime.PostgresChanges;
 using TableAttribute = Supabase.Postgrest.Attributes.TableAttribute;
 using System.Collections.Generic;
 using System;
@@ -20,20 +23,25 @@ namespace VRCEntryBoard.Infra.PlayerRepository
 {
     internal class SupabasePlayerRepository : IPlayerRepository
     {
+        public event Action OnPlayerDataChanged;
+
         private readonly Supabase.Client _client;
         private readonly VRCEntryBoardConfig _config;
         private readonly string _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VRCEntryBoard-config.json");
         private readonly ILogger<SupabasePlayerRepository> _logger;
         private readonly IExceptionNotifier _exceptionNotifier;
+        private readonly SynchronizationContext _uiSyncContext;
         private List<Player> _players;
+        private RealtimeChannel _realtimeChannel;
 
         public SupabasePlayerRepository(SupabaseClient supabaseClient, IExceptionNotifier exceptionNotifier)
         {
-            _exceptionNotifier = exceptionNotifier ?? 
+            _exceptionNotifier = exceptionNotifier ??
                 throw new ArgumentNullException(nameof(exceptionNotifier));
             _logger = LogManager.GetLogger<SupabasePlayerRepository>();
             _players = new List<Player>();
-            
+            _uiSyncContext = SynchronizationContext.Current ?? new SynchronizationContext();
+
             try
             {
                 _client = supabaseClient.GetClient();
@@ -367,15 +375,67 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         {
             try
             {
-                // 未実装
+                await _client.InitializeAsync();
+
+                _realtimeChannel = _client.Realtime.Channel("realtime", "public", "Player");
+
+                _realtimeChannel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.Updates, (_, change) =>
+                {
+                    try
+                    {
+                        var updatedModel = change.Model<PlayerModel>();
+                        if (updatedModel == null) return;
+
+                        _uiSyncContext.Post(_ =>
+                        {
+                            var player = _players.Find(p => p.ID == updatedModel.ID);
+                            if (player == null) return;
+
+                            player.EntryStatus = (emEntryStatus)updatedModel.EntryStatus;
+                            player.StaffStatus = updatedModel.StaffStatus;
+                            player.ExpStatus = (emExpStatus)updatedModel.ExpStatus;
+                            player.RegulationStatus = updatedModel.RegulationStatus;
+                            player.JoinStatus = updatedModel.JoinStatus;
+
+                            OnPlayerDataChanged?.Invoke();
+                        }, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "リアルタイム更新の処理中にエラーが発生しました");
+                    }
+                });
+
+                await _realtimeChannel.Subscribe();
+                _logger.LogInformation("Playerテーブルのリアルタイム購読を開始しました");
             }
             catch (Exception ex)
             {
                 throw new VRCApplicationException(
-                    "Supabaseリアルタイム購読エラー", 
-                    "Supabaseリアルタイム更新の購読設定中にエラーが発生しました", 
-                    isFatal: false, 
+                    "Supabaseリアルタイム購読エラー",
+                    "Supabaseリアルタイム更新の購読設定中にエラーが発生しました",
+                    isFatal: false,
                     innerException: ex);
+            }
+        }
+
+        /// <summary>
+        /// 更新の購読解除
+        /// </summary>
+        public async Task Unsubscribe()
+        {
+            try
+            {
+                if (_realtimeChannel != null)
+                {
+                    _realtimeChannel.Unsubscribe();
+                    _realtimeChannel = null;
+                    _logger.LogInformation("Playerテーブルのリアルタイム購読を解除しました");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "リアルタイム購読の解除中にエラーが発生しました");
             }
         }
 

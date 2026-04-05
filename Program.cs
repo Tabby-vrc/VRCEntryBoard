@@ -52,7 +52,11 @@ namespace VRCEntryBoard
                 var mainForm = serviceProvider.GetRequiredService<MainForm>();
                 logger.LogInformation("メインフォーム表示開始");
                 Application.Run(mainForm);
-                
+
+                // アプリケーション終了時にリアルタイム購読を解除
+                var controller = serviceProvider.GetRequiredService<CEntryViewController>();
+                controller.Unsubscribe();
+
                 // アプリケーション正常終了のログ
                 logger.LogInformation("==================================================");
                 logger.LogInformation("アプリケーション正常終了");

@@ -22,7 +22,7 @@ namespace VRCEntryBoard.Infra
         public SupabaseClient(IExceptionNotifier exceptionNotifier)
         {
             _logger = LogManager.GetLogger<SupabaseClient>();
-            
+
             try
             {
                 _config = LoadConfig();
@@ -30,9 +30,9 @@ namespace VRCEntryBoard.Infra
                 {
                     AutoConnectRealtime = true,
                 };
-                
-                // 接続テスト - オンラインかどうか確認
+
                 _client = new Supabase.Client(_config.Url, _config.Key, options);
+                _logger.LogInformation("Supabaseクライアントインスタンスを作成しました");
             }
             catch
             {
@@ -104,24 +104,6 @@ namespace VRCEntryBoard.Infra
             }
         }
 
-        /// <summary>
-        /// 非同期初期化
-        /// </summary>
-        private async Task Init()
-        {
-            try
-            {
-                await _client.InitializeAsync();
-                _logger.LogInformation("Supabaseクライアントが非同期初期化されました");
-            }
-            catch (Exception ex)
-            {
-                throw new VRCApplicationException(
-                    "データベース初期化エラー", 
-                    "クライアントの初期化中にエラーが発生しました。ネットワーク接続を確認してください。", 
-                    isFatal: true, 
-                    innerException: ex);
-            }
-        }
+
     }
 }

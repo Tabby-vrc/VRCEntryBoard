@@ -18,6 +18,8 @@ namespace VRCEntryBoard.Infra.PlayerRepository
     /// </summary>
     internal class OfflinePlayerRepository : IPlayerRepository
     {
+        public event Action OnPlayerDataChanged;
+
         private readonly string _cachePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PlayerCache.json");
         private readonly ILogger<OfflinePlayerRepository> _logger;
         private readonly IExceptionNotifier _exceptionNotifier;
@@ -277,6 +279,16 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         /// オフラインモードでは何もしない
         /// </summary>
         public Task SubscribeUpdates()
+        {
+            // オフラインモードでは購読不要
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新の購読解除
+        /// オフラインモードでは何もしない
+        /// </summary>
+        public Task Unsubscribe()
         {
             // オフラインモードでは購読不要
             return Task.CompletedTask;

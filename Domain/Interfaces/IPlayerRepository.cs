@@ -9,6 +9,7 @@ namespace VRCEntryBoard.Domain.Interfaces
 {
     internal interface IPlayerRepository
     {
+        event Action OnPlayerDataChanged;
         List<Player> GetPlayers();
         Task Insert(Player player);
         Task Insert(List<Player> players);
@@ -19,5 +20,6 @@ namespace VRCEntryBoard.Domain.Interfaces
         Task UpdateJoinStatus(List<Player> players);
         Task ResyncPlayer();
         Task SubscribeUpdates();
+        Task Unsubscribe();
     }
 }
