@@ -165,8 +165,7 @@ namespace VRCEntryBoard.App.Controller
                 try
                 {
                     // CSVファイルを書き出しモードで開く
-                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                    using (StreamWriter writer = new StreamWriter(string.Format("グループ{0}.csv", playerGroup.Key), false, Encoding.GetEncoding("Shift-JIS")))
+                    using (StreamWriter writer = new StreamWriter(string.Format("グループ{0}.csv", playerGroup.Key), false, Encoding.UTF8))
                     {
                         writer.WriteLine("プレイヤー名");
 
