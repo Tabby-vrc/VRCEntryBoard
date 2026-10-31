@@ -34,6 +34,11 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         private List<Player> _players;
         private RealtimeChannel _realtimeChannel;
 
+        /// <summary>DB更新の最大試行回数（初回含む）</summary>
+        private const int MaxUpdateAttempts = 3;
+        /// <summary>DB更新の再試行待機時間の基準値（ミリ秒）。試行回数に比例して延長する</summary>
+        private const int UpdateRetryBaseDelayMs = 500;
+
         public SupabasePlayerRepository(SupabaseClient supabaseClient, IExceptionNotifier exceptionNotifier)
         {
             _exceptionNotifier = exceptionNotifier ??
@@ -158,138 +163,124 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         /// エントリーステータス更新
         /// </summary>
         /// <param name="player">更新対象プレイヤー</param>
-        public async Task UpdateEntryStatus(Player player)
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateEntryStatus(Player player)
         {
             if (null == player)
             {
                 _logger.LogWarning("プレイヤーオブジェクトがnullのため、ステータス更新処理をスキップします");
-                return;
+                return false;
             }
 
-            try
-            {
-                var getPlayerModel = await _client.From<PlayerModel>()
+            var entryStatus = (int)player.EntryStatus;
+            return await ExecuteUpdateWithRetry(
+                () => _client.From<PlayerModel>()
                     .Where(x => x.ID == player.ID)
-                    .Single();
-                
-                if (null == getPlayerModel)
-                {
-                    _logger.LogWarning("更新対象のプレイヤーが見つかりません: {PlayerName}, ID: {PlayerId}", player.Name, player.ID);
-                    return;
-                }
-
-                getPlayerModel.EntryStatus = (int)player.EntryStatus;
-                await getPlayerModel.Update<PlayerModel>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "プレイヤーのエントリーステータス更新中に予期せぬエラーが発生しました: {PlayerName}, ID: {PlayerId}", 
-                    player.Name, player.ID);
-            }
+                    .Set(x => x.EntryStatus, entryStatus)
+                    .Update(),
+                "エントリーステータス", player);
         }
 
         /// <summary>
         /// スタッフステータス更新
         /// </summary>
         /// <param name="player">更新対象プレイヤー</param>
-        public async Task UpdateStaffStatus(Player player)
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateStaffStatus(Player player)
         {
             if (player == null)
             {
                 _logger.LogWarning("プレイヤーオブジェクトがnullのため、スタッフステータス更新処理をスキップします");
-                return;
+                return false;
             }
 
-            try
-            {
-                var getPlayerModel = await _client.From<PlayerModel>()
+            var staffStatus = player.StaffStatus;
+            return await ExecuteUpdateWithRetry(
+                () => _client.From<PlayerModel>()
                     .Where(x => x.ID == player.ID)
-                    .Single();
-
-                if (null == getPlayerModel)
-                {
-                    _logger.LogWarning("更新対象のプレイヤーが見つかりません: {PlayerName}, ID: {PlayerId}", player.Name, player.ID);
-                    return;
-                }
-
-                getPlayerModel.StaffStatus = player.StaffStatus;
-                await getPlayerModel.Update<PlayerModel>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "プレイヤーのスタッフステータス更新中に予期せぬエラーが発生しました: {PlayerName}, ID: {PlayerId}", 
-                    player.Name, player.ID);
-            }
+                    .Set(x => x.StaffStatus, staffStatus)
+                    .Update(),
+                "スタッフステータス", player);
         }
 
         /// <summary>
         /// 経験ステータス更新
         /// </summary>
         /// <param name="player">更新対象プレイヤー</param>
-        public async Task UpdateExpStatus(Player player)
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateExpStatus(Player player)
         {
             if (player == null)
             {
                 _logger.LogWarning("プレイヤーオブジェクトがnullのため、経験ステータス更新処理をスキップします");
-                return;
+                return false;
             }
 
-            try
-            {
-                var getPlayerModel = await _client.From<PlayerModel>()
+            var expStatus = (int)player.ExpStatus;
+            var regulationStatus = player.RegulationStatus;
+            return await ExecuteUpdateWithRetry(
+                () => _client.From<PlayerModel>()
                     .Where(x => x.ID == player.ID)
-                    .Single();
-
-                if (null == getPlayerModel)
-                {
-                    _logger.LogWarning("更新対象のプレイヤーが見つかりません: {PlayerName}, ID: {PlayerId}", player.Name, player.ID);
-                    return;
-                }
-
-                getPlayerModel.ExpStatus = (int)player.ExpStatus;
-                getPlayerModel.RegulationStatus = player.RegulationStatus;
-                await getPlayerModel.Update<PlayerModel>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "プレイヤーの経験ステータス更新中に予期せぬエラーが発生しました: {PlayerName}, ID: {PlayerId}", 
-                    player.Name, player.ID);
-            }
+                    .Set(x => x.ExpStatus, expStatus)
+                    .Set(x => x.RegulationStatus, regulationStatus)
+                    .Update(),
+                "経験ステータス", player);
         }
 
         /// <summary>
         /// レギュレーションステータス更新
         /// </summary>
         /// <param name="player">更新対象プレイヤー</param>
-        public async Task UpdateRegulationStatus(Player player)
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateRegulationStatus(Player player)
         {
             if (player == null)
             {
                 _logger.LogWarning("プレイヤーオブジェクトがnullのため、レギュレーションステータス更新処理をスキップします");
-                return;
+                return false;
             }
 
-            try
-            {
-                var getPlayerModel = await _client.From<PlayerModel>()
+            var expStatus = (int)player.ExpStatus;
+            var regulationStatus = player.RegulationStatus;
+            return await ExecuteUpdateWithRetry(
+                () => _client.From<PlayerModel>()
                     .Where(x => x.ID == player.ID)
-                    .Single();
+                    .Set(x => x.ExpStatus, expStatus)
+                    .Set(x => x.RegulationStatus, regulationStatus)
+                    .Update(),
+                "レギュレーションステータス", player);
+        }
 
-                if (null == getPlayerModel)
-                {
-                    _logger.LogWarning("更新対象のプレイヤーが見つかりません: {PlayerName}, ID: {PlayerId}", player.Name, player.ID);
-                    return;
-                }
-
-                getPlayerModel.ExpStatus = (int)player.ExpStatus;
-                getPlayerModel.RegulationStatus = player.RegulationStatus;
-                await getPlayerModel.Update<PlayerModel>();
-            }
-            catch (Exception ex)
+        /// <summary>
+        /// DB更新を再試行付きで実行する
+        /// 一時的な通信エラーからの回復を目的とし、全試行が失敗した場合はfalseを返す
+        /// </summary>
+        /// <param name="update">更新処理</param>
+        /// <param name="targetName">ログ出力用の更新対象名</param>
+        /// <param name="player">更新対象プレイヤー</param>
+        /// <returns>DB更新に成功した場合true</returns>
+        private async Task<bool> ExecuteUpdateWithRetry(Func<Task> update, string targetName, Player player)
+        {
+            for (int attempt = 1; attempt <= MaxUpdateAttempts; attempt++)
             {
-                _logger.LogError(ex, "プレイヤーのレギュレーションステータス更新中に予期せぬエラーが発生しました: {PlayerName}, ID: {PlayerId}", 
-                    player.Name, player.ID);
+                try
+                {
+                    await update();
+                    return true;
+                }
+                catch (Exception ex) when (attempt < MaxUpdateAttempts)
+                {
+                    _logger.LogWarning(ex, "プレイヤーの{TargetName}更新に失敗したため再試行します ({Attempt}/{MaxAttempts}): {PlayerName}, ID: {PlayerId}",
+                        targetName, attempt, MaxUpdateAttempts, player.Name, player.ID);
+                    await Task.Delay(UpdateRetryBaseDelayMs * attempt);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "プレイヤーの{TargetName}更新中に予期せぬエラーが発生しました: {PlayerName}, ID: {PlayerId}",
+                        targetName, player.Name, player.ID);
+                }
             }
+            return false;
         }
 
         /// <summary>
@@ -304,20 +295,19 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 return;
             }
 
-            foreach (var player in players)
+            try
             {
-                var getPlayerModel = await _client.From<PlayerModel>()
-                    .Where(x => x.ID == player.ID)
-                    .Single();
-
-                if (null == getPlayerModel)
+                foreach (var player in players)
                 {
-                    _logger.LogWarning("更新対象のプレイヤーが見つかりません: {PlayerName}, ID: {PlayerId}", player.Name, player.ID);
-                    continue;
+                    await _client.From<PlayerModel>()
+                        .Where(x => x.ID == player.ID)
+                        .Set(x => x.JoinStatus, player.JoinStatus)
+                        .Update();
                 }
-
-                getPlayerModel.JoinStatus = player.JoinStatus;
-                await getPlayerModel.Update<PlayerModel>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "プレイヤーのJoinステータス更新中に予期せぬエラーが発生しました");
             }
         }
 

@@ -77,15 +77,28 @@ namespace VRCEntryBoard.App.Controller
 
         /// <summary>
         /// エントリーステータス更新
+        /// DB更新に失敗した場合は変更前の値に戻す
         /// </summary>
         /// <param name="targetPlayerName">更新対象プレイヤー名</param>
         /// <param name="status">更新ステータス</param>
-        public void UpdateEntryStatus(string targetPlayerName, emEntryStatus status)
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateEntryStatus(string targetPlayerName, emEntryStatus status)
         {
             var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            if (targetPlayer == null) return false;
+
+            var prevEntryStatus = targetPlayer.EntryStatus;
             targetPlayer.EntryStatus = status;
-            _PlayerRepository.UpdateEntryStatus(targetPlayer);
             UpdateNum();
+
+            bool isSuccess = await _PlayerRepository.UpdateEntryStatus(targetPlayer);
+            // 待機中に別の変更が入っていない場合のみ戻す
+            if (!isSuccess && targetPlayer.EntryStatus == status)
+            {
+                targetPlayer.EntryStatus = prevEntryStatus;
+                UpdateNum();
+            }
+            return isSuccess;
         }
         public emEntryStatus GetEntryStatus(string targetPlayerName)
         {
@@ -94,16 +107,29 @@ namespace VRCEntryBoard.App.Controller
 
         /// <summary>
         /// レギュレーションステータス更新
+        /// DB更新に失敗した場合は変更前の値に戻す
         /// </summary>
         /// <param name="targetPlayerName">更新対象プレイヤー名</param>
-        /// <param name="regStatus">更新ステータス</param>  
-        public void UpdateRegulationStatus(string targetPlayerName, int regStatus)
+        /// <param name="regStatus">更新ステータス</param>
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateRegulationStatus(string targetPlayerName, int regStatus)
         {
             var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            if (targetPlayer == null) return false;
+
+            var prevRegulationStatus = targetPlayer.RegulationStatus;
+            var prevExpStatus = targetPlayer.ExpStatus;
             targetPlayer.RegulationStatus = regStatus;
             targetPlayer.ExpStatus &= ~emExpStatus.Beginner;
-            _PlayerRepository.UpdateRegulationStatus(targetPlayer);
+            var newExpStatus = targetPlayer.ExpStatus;
             UpdateNum();
+
+            bool isSuccess = await _PlayerRepository.UpdateRegulationStatus(targetPlayer);
+            if (!isSuccess)
+            {
+                RestoreExpAndRegulation(targetPlayer, regStatus, newExpStatus, prevRegulationStatus, prevExpStatus);
+            }
+            return isSuccess;
         }
         public int GetRegulationStatus(string targetPlayerName)
         {
@@ -112,17 +138,30 @@ namespace VRCEntryBoard.App.Controller
 
         /// <summary>
         /// 初心者ステータス更新
+        /// DB更新に失敗した場合は変更前の値に戻す
         /// </summary>
         /// <param name="targetPlayerName">更新対象プレイヤー名</param>
         /// <param name="isBeginner">更新ステータス</param>
-        public void UpdateBeginnerStatus(string targetPlayerName, bool isBeginner)
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateBeginnerStatus(string targetPlayerName, bool isBeginner)
         {
             var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            if (targetPlayer == null) return false;
+
+            var prevRegulationStatus = targetPlayer.RegulationStatus;
+            var prevExpStatus = targetPlayer.ExpStatus;
             if (isBeginner) targetPlayer.ExpStatus |= emExpStatus.Beginner;
             else            targetPlayer.ExpStatus &= ~emExpStatus.Beginner;
             targetPlayer.RegulationStatus = 0;
-            _PlayerRepository.UpdateExpStatus(targetPlayer);
+            var newExpStatus = targetPlayer.ExpStatus;
             UpdateNum();
+
+            bool isSuccess = await _PlayerRepository.UpdateExpStatus(targetPlayer);
+            if (!isSuccess)
+            {
+                RestoreExpAndRegulation(targetPlayer, 0, newExpStatus, prevRegulationStatus, prevExpStatus);
+            }
+            return isSuccess;
         }
         public emExpStatus GetExpStatus(string targetPlayerName)
         {
@@ -130,14 +169,42 @@ namespace VRCEntryBoard.App.Controller
         }
 
         /// <summary>
-        /// スタッフステータス更新
+        /// 経験/レギュレーションステータスを変更前の値に戻す
+        /// 待機中に別の変更が入っていない場合のみ戻す
         /// </summary>
-        public void UpdateStaff(string targetPlayerName, bool isStaff)
+        private void RestoreExpAndRegulation(Player targetPlayer, int setRegulationStatus, emExpStatus setExpStatus,
+                                             int prevRegulationStatus, emExpStatus prevExpStatus)
+        {
+            if (targetPlayer.RegulationStatus != setRegulationStatus ||
+                targetPlayer.ExpStatus != setExpStatus) return;
+
+            targetPlayer.RegulationStatus = prevRegulationStatus;
+            targetPlayer.ExpStatus = prevExpStatus;
+            UpdateNum();
+        }
+
+        /// <summary>
+        /// スタッフステータス更新
+        /// DB更新に失敗した場合は変更前の値に戻す
+        /// </summary>
+        /// <returns>DB更新に成功した場合true</returns>
+        public async Task<bool> UpdateStaff(string targetPlayerName, bool isStaff)
         {
             var targetPlayer = _PlayerRepository.GetPlayers().FirstOrDefault(x => x.Name == targetPlayerName);
+            if (targetPlayer == null) return false;
+
+            var prevStaffStatus = targetPlayer.StaffStatus;
             targetPlayer.StaffStatus = isStaff;
-            _PlayerRepository.UpdateStaffStatus(targetPlayer);
             UpdateNum();
+
+            bool isSuccess = await _PlayerRepository.UpdateStaffStatus(targetPlayer);
+            // 待機中に別の変更が入っていない場合のみ戻す
+            if (!isSuccess && targetPlayer.StaffStatus == isStaff)
+            {
+                targetPlayer.StaffStatus = prevStaffStatus;
+                UpdateNum();
+            }
+            return isSuccess;
         }
         public bool GetStaff(string targetPlayerName)
         {

@@ -158,11 +158,11 @@ namespace VRCEntryBoard.Infra.PlayerRepository
         /// <summary>
         /// エントリーステータス更新
         /// </summary>
-        public Task UpdateEntryStatus(Player player)
+        public Task<bool> UpdateEntryStatus(Player player)
         {
             if (player == null)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(false);
             }
 
             var targetPlayer = _players.Find(p => p.ID == player.ID || p.Name == player.Name);
@@ -172,17 +172,17 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 SaveCache();
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         /// <summary>
         /// スタッフステータス更新
         /// </summary>
-        public Task UpdateStaffStatus(Player player)
+        public Task<bool> UpdateStaffStatus(Player player)
         {
             if (player == null)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(false);
             }
 
             var targetPlayer = _players.Find(p => p.ID == player.ID || p.Name == player.Name);
@@ -192,17 +192,17 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 SaveCache();
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         /// <summary>
         /// 経験ステータス更新
         /// </summary>
-        public Task UpdateExpStatus(Player player)
+        public Task<bool> UpdateExpStatus(Player player)
         {
             if (player == null)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(false);
             }
 
             var targetPlayer = _players.Find(p => p.ID == player.ID || p.Name == player.Name);
@@ -212,17 +212,17 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 SaveCache();
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         /// <summary>
         /// レギュレーションステータス更新
         /// </summary>
-        public Task UpdateRegulationStatus(Player player)
+        public Task<bool> UpdateRegulationStatus(Player player)
         {
             if (player == null)
             {
-                return Task.CompletedTask;
+                return Task.FromResult(false);
             }
 
             var targetPlayer = _players.Find(p => p.ID == player.ID || p.Name == player.Name);
@@ -232,7 +232,7 @@ namespace VRCEntryBoard.Infra.PlayerRepository
                 SaveCache();
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         /// <summary>

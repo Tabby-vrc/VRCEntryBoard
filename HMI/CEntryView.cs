@@ -219,49 +219,81 @@ namespace VRCEntryBoard.HMI
             rBtnNone.Checked = true;
         }
 
-        private void rBtnEntry_Click(object sender, EventArgs e)
+        private async void rBtnEntry_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.Entry);
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.Entry));
         }
-        private void rBtnVisiter_Click(object sender, EventArgs e)
+        private async void rBtnVisiter_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.Visiter);
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.Visiter));
         }
-        private void rBtnAskMe_Click(object sender, EventArgs e)
+        private async void rBtnAskMe_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.AskMe);
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateEntryStatus(_lastSelectPlayerPanel.PlayerName, emEntryStatus.AskMe));
         }
 
-        private void rBtnReg1_Click(object sender, EventArgs e)
+        private async void rBtnReg1_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateRegulationStatus(_lastSelectPlayerPanel.PlayerName, 1);
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateRegulationStatus(_lastSelectPlayerPanel.PlayerName, 1));
         }
-        private void rBtnReg2_Click(object sender, EventArgs e)
+        private async void rBtnReg2_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateRegulationStatus(_lastSelectPlayerPanel.PlayerName, 2);
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateRegulationStatus(_lastSelectPlayerPanel.PlayerName, 2));
         }
 
         /// <summary>
         /// 初心者ステータス更新
         /// </summary>
-        private void rBtnBeginner_Click(object sender, EventArgs e)
+        private async void rBtnBeginner_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateBeginnerStatus(_lastSelectPlayerPanel.PlayerName, true);
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateBeginnerStatus(_lastSelectPlayerPanel.PlayerName, true));
         }
 
         /// <summary>
         /// スタッフステータス更新
         /// </summary>
-        private void chkBoxStaff_Click(object sender, EventArgs e)
+        private async void chkBoxStaff_Click(object sender, EventArgs e)
         {
             if (null == _lastSelectPlayerPanel) return;
-            _controller.UpdateStaff(_lastSelectPlayerPanel.PlayerName, (sender as CheckBox).Checked);
+            var isStaff = (sender as CheckBox).Checked;
+            await InvokeStatusUpdateAsync(
+                () => _controller.UpdateStaff(_lastSelectPlayerPanel.PlayerName, isStaff));
+        }
+
+        /// <summary>
+        /// ステータス更新処理の共通実行
+        /// DB更新に失敗して値が戻された場合は、選択中プレイヤーのステータスUIを再同期する
+        /// async void から呼ぶ際の例外をキャッチして表示する
+        /// </summary>
+        private async System.Threading.Tasks.Task InvokeStatusUpdateAsync(Func<System.Threading.Tasks.Task<bool>> action)
+        {
+            var targetPanel = _lastSelectPlayerPanel;
+            try
+            {
+                bool isSuccess = await action();
+                // 待機中に別のプレイヤーが選択された場合はUIを触らない
+                if (!isSuccess && targetPanel == _lastSelectPlayerPanel)
+                {
+                    SetStatusUI(targetPanel.PlayerName);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show("ステータス更新中にエラーが発生しました。\n" + ex.Message,
+                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         /// <summary>

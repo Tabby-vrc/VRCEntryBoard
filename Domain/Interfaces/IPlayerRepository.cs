@@ -13,10 +13,10 @@ namespace VRCEntryBoard.Domain.Interfaces
         List<Player> GetPlayers();
         Task Insert(Player player);
         Task Insert(List<Player> players);
-        Task UpdateEntryStatus(Player player);
-        Task UpdateStaffStatus(Player player);
-        Task UpdateExpStatus(Player player);
-        Task UpdateRegulationStatus(Player player);
+        Task<bool> UpdateEntryStatus(Player player);
+        Task<bool> UpdateStaffStatus(Player player);
+        Task<bool> UpdateExpStatus(Player player);
+        Task<bool> UpdateRegulationStatus(Player player);
         Task UpdateJoinStatus(List<Player> players);
         Task ResyncPlayer();
         Task SubscribeUpdates();
