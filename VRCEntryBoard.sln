@@ -5,6 +5,10 @@ VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCEntryBoard", "VRCEntryBoard.csproj", "{63F4341F-BE84-4D35-9ABA-089F26AF7B95}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6B594885-3585-4CE4-A1D1-8C882AC350F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCEntryBoard.Tests", "Tests\VRCEntryBoard.Tests\VRCEntryBoard.Tests.csproj", "{82513786-2EBB-474E-9FC8-782D12ED3487}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,11 +19,18 @@ Global
 		{63F4341F-BE84-4D35-9ABA-089F26AF7B95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63F4341F-BE84-4D35-9ABA-089F26AF7B95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63F4341F-BE84-4D35-9ABA-089F26AF7B95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82513786-2EBB-474E-9FC8-782D12ED3487}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82513786-2EBB-474E-9FC8-782D12ED3487}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82513786-2EBB-474E-9FC8-782D12ED3487}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82513786-2EBB-474E-9FC8-782D12ED3487}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7AB87AAA-1626-4F52-BD5A-B0F7F95A1C83}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{82513786-2EBB-474E-9FC8-782D12ED3487} = {6B594885-3585-4CE4-A1D1-8C882AC350F1}
 	EndGlobalSection
 EndGlobal

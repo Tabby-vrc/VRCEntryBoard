@@ -1,0 +1,35 @@
+# VRCEntryBoard テスト用の最小 Supabase 互換スタック (Postgres + PostgREST + 変換プロキシ)
+# 127.0.0.1:54321 のみで待ち受ける（Dockerが動く環境ならローカルでもリモートでも可。リモートの場合はSSHトンネル等で転送する）。Realtime は含まない。
+# 起動前に .env を用意すること: PG_PASSWORD（任意の文字列）と JWT_SECRET（32文字以上）
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: vrc
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    mem_limit: 256m
+  rest:
+    image: postgrest/postgrest:v12.2.3
+    restart: unless-stopped
+    depends_on: [db]
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${PG_PASSWORD}@db:5432/vrc
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+    mem_limit: 128m
+  proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on: [rest]
+    ports:
+      - "127.0.0.1:54321:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    mem_limit: 32m
+volumes:
+  pgdata:
