@@ -92,6 +92,7 @@ namespace VRCEntryBoard
                 var factory = provider.GetRequiredService<PlayerRepositoryFactory>();
                 return factory.CreateRepository();
             });
+            services.AddSingleton<IWinCountProvider, GistWinCountProvider>();
             services.AddSingleton<SupabaseClient>();
             services.AddSingleton<IRegulationRepository, SupabaseRegulationRepository>();
 

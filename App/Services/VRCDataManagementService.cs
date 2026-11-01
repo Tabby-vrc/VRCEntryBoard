@@ -20,17 +20,47 @@ namespace VRCEntryBoard.App.Services
     {
         private readonly IVRCDataLoder _vrcDataLoder;
         private readonly IPlayerRepository _playerRepository;
+        private readonly IWinCountProvider _winCountProvider;
         private readonly List<string> _monitoredWorldNames;
         private bool _isMonitoring = false;
         private readonly string _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VRCEntryBoard-config.json");
 
+        /// <summary>この優勝回数以上の新規プレイヤーは、レギュレーション2を初期値にする</summary>
+        internal const int Reg2WinCountThreshold = 2;
+
         public VRCDataManagementService(
             IVRCDataLoder vrcDataLoder,
-            IPlayerRepository playerRepository)
+            IPlayerRepository playerRepository,
+            IWinCountProvider winCountProvider)
         {
             _vrcDataLoder = vrcDataLoder;
             _playerRepository = playerRepository;
+            _winCountProvider = winCountProvider;
             _monitoredWorldNames = LoadConfig().MonitoredWorldNames;
+        }
+
+        /// <summary>
+        /// テスト用コンストラクタ（設定ファイルを読まず、監視対象ワールドを直接指定する）
+        /// </summary>
+        internal VRCDataManagementService(
+            IVRCDataLoder vrcDataLoder,
+            IPlayerRepository playerRepository,
+            IWinCountProvider winCountProvider,
+            List<string> monitoredWorldNames)
+        {
+            _vrcDataLoder = vrcDataLoder;
+            _playerRepository = playerRepository;
+            _winCountProvider = winCountProvider;
+            _monitoredWorldNames = monitoredWorldNames;
+        }
+
+        /// <summary>
+        /// 優勝回数の事前読み込み（アプリ起動時に1回行い、以降はキャッシュを使う）
+        /// 失敗しても例外は投げない
+        /// </summary>
+        public Task PreloadWinCountsAsync()
+        {
+            return _winCountProvider.LoadAsync();
         }
 
         /// <summary>
@@ -81,7 +111,13 @@ namespace VRCEntryBoard.App.Services
             
             // 新規プレイヤーは追加
             var newJoinEvents = joinEvent.Where(e => players.Find(p => p.Name == e.PlayerName) == null).ToList();
-            var newJoinPlayers = newJoinEvents.Select(e => new Player(e.PlayerName)).ToList();
+            // 優勝回数が閾値以上のプレイヤーは、レギュレーション2を初期値にする
+            // 優勝回数は起動時に読み込み済み。起動時に失敗していた場合のみ、ここで再試行される
+            if (newJoinEvents.Count > 0) await _winCountProvider.LoadAsync();
+            var newJoinPlayers = newJoinEvents.Select(e => new Player(e.PlayerName)
+            {
+                RegulationStatus = _winCountProvider.GetWinCount(e.PlayerName) >= Reg2WinCountThreshold ? 2 : 1
+            }).ToList();
             _playerRepository.Insert(newJoinPlayers);
 
             // 既存プレイヤーはJoinステータスを更新

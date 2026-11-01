@@ -42,9 +42,12 @@ namespace VRCEntryBoard.App.Controller
         public async Task InitView()
         {
             _EntryView.UpdateEntryNum(new EntryNumDto());
+            // 優勝回数は起動時に1回だけ読み込む（レギュレーション取得と並行して実行）
+            var winCountTask = _vrcDataManagementService.PreloadWinCountsAsync();
             await _RegulationRepository.UpdateRegulations();
             _EntryView.SetRegulationName(_RegulationRepository.GetRegulations()[0].RegulationName?? "未設定",
                                          _RegulationRepository.GetRegulations()[1].RegulationName?? "未設定");
+            await winCountTask;
             await UpdatePlayerList();
             _PlayerRepository.OnPlayerDataChanged += UpdateNum;
             await _PlayerRepository.SubscribeUpdates();
