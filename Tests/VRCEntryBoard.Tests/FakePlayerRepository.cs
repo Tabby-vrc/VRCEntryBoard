@@ -37,8 +37,19 @@ namespace VRCEntryBoard.Tests
         public Task<bool> UpdateExpStatus(Player player) => Record(nameof(UpdateExpStatus), player);
         public Task<bool> UpdateRegulationStatus(Player player) => Record(nameof(UpdateRegulationStatus), player);
 
-        public Task Insert(Player player) => Task.CompletedTask;
-        public Task Insert(List<Player> players) => Task.CompletedTask;
+        /// <summary>Insertされたプレイヤー（登録時点のレギュレーション値）</summary>
+        public List<(string Name, int Regulation)> Inserted { get; } = new List<(string, int)>();
+
+        public Task Insert(Player player) => Insert(new List<Player> { player });
+        public Task Insert(List<Player> players)
+        {
+            foreach (var player in players)
+            {
+                Inserted.Add((player.Name, player.RegulationStatus));
+                Players.Add(player);
+            }
+            return Task.CompletedTask;
+        }
         public Task UpdateJoinStatus(List<Player> players) => Task.CompletedTask;
         public Task ResyncPlayer() => Task.CompletedTask;
         public Task SubscribeUpdates() => Task.CompletedTask;

@@ -7,6 +7,8 @@
     <!-- 本体は self-contained の exe のため、参照時の検証を無効化する -->
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
     <IsPackable>false</IsPackable>
+    <!-- ルートでの dotnet publish（単一ファイル指定）の対象から外す -->
+    <IsPublishable>false</IsPublishable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
